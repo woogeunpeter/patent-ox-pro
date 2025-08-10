@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>특허법 OX 퀴즈 (Pro: 노치 대응 + 해설 확인)</title>
+  <title>특허법 OX 퀴즈 (FINAL)</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,7 +11,7 @@
     :root { --safe-top: env(safe-area-inset-top, 0px); }
     html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Apple SD Gothic Neo,Helvetica,Arial,sans-serif;background:#fff;color:#111}
     body{ padding-top: calc(var(--safe-top) + 8px); }
-    .wrap{max-width:760px;margin:0 auto;padding:22px}
+    .wrap{max-width:860px;margin:0 auto;padding:22px}
     header{position:sticky; top:0; padding-top:calc(var(--safe-top) + 6px); background:#fff; z-index:10; display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
     h1{font-size:20px;margin:0;display:flex;align-items:center;gap:6px}
     .badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#f1f1f1;font-size:11px;color:#555}
@@ -22,7 +22,7 @@
     input[type='range'], select{accent-color:#111}
     select{padding:6px 8px;border:1px solid #ddd;border-radius:8px;background:#fff}
     .card{border:1px solid #e6e6e6;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-    .stmt{font-size:18px;line-height:1.5;margin:0 0 10px}
+    .stmt{font-size:18px;line-height:1.6;margin:0 0 10px}
     .meta{font-size:12px;color:#666;margin-top:6px}
     .progress{font-size:13px;color:#666}
     .btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
@@ -36,17 +36,15 @@
     a.src{color:#2b5cff;text-decoration:none}
     .foot{margin-top:18px;font-size:12px;color:#666}
     #fabGen{position:fixed;right:16px;bottom:20px;border:0;border-radius:999px;padding:14px 18px;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.18);background:#111;color:#fff;z-index:999;}
-    /* 확인 버튼 */
     #confirmBtn{margin-top:12px;padding:12px 16px;border-radius:10px;border:1px solid #cfd8dc;background:#f0f4f8;font-size:14px}
     #confirmBtn:active{transform:scale(.98)}
-    /* 비활성화 시 시각 표시 */
     .disabled{opacity:.5; pointer-events:none}
   </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>특허법 OX 퀴즈 <span class="badge">Pro</span></h1>
+    <h1>특허법 OX 퀴즈 <span class="badge">FINAL</span></h1>
     <div class="toolbar">
       <button id="newSetBtn" title="새 문제 세트">새 세트</button>
       <button id="resetBtn" title="점수 리셋">리셋</button>
@@ -55,15 +53,23 @@
   </header>
 
   <div id="opts">
-    <label><input type="checkbox" id="autoGen"/> 앱 열 때 자동 새 세트</label>
-    <label>문항 수 <input type="range" id="setSize" min="6" max="30" step="1"><span id="setSizeVal"></span></label>
+    <label>난이도
+      <select id="diffSel">
+        <option value="mid">중</option>
+        <option value="high" selected>상</option>
+      </select>
+    </label>
+    <label>문항 수 <input type="range" id="setSize" min="6" max="40" step="1"><span id="setSizeVal"></span></label>
     <label>함정 강도 <input type="range" id="trapLevel" min="1" max="3" step="1"><span id="trapLevelVal"></span></label>
     <label>모드
       <select id="modeSel">
-        <option value="statute">조문 OX</option>
-        <option value="case">판례 OX</option>
+        <option value="mix" selected>혼합(본문+시행령+판례)</option>
+        <option value="statute">본문만</option>
+        <option value="enf">시행령만</option>
+        <option value="case">판례만</option>
       </select>
     </label>
+    <label><input type="checkbox" id="autoGen"/> 앱 열 때 자동 새 세트</label>
   </div>
 
   <div class="card">
@@ -83,238 +89,191 @@
 <button id="fabGen">새 문제 생성</button>
 
 <script>
-function numericTrap(baseText, variants){
-  const v = variants[Math.floor(Math.random()*variants.length)];
-  return baseText.replace(/\{기간\}/g, v.num);
-}
+// ---- helpers & trap transformers
+const ch = (a)=>a[Math.floor(Math.random()*a.length)];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+function numericSwap(text, pairs){ const p = ch(pairs); return text.replaceAll('{숫자}', p.n).replaceAll('{단위}', p.u||''); }
+function basisSwap(text){ return text.replaceAll('{기산}', ch(['송달일','발송일','공고일','접수일','통지일'])); }
+function whoSwap(text){ return text.replaceAll('{주체}', ch(['누구든지','이해관계인','권리자','출원인','대리인'])); }
+function boolFlip(text){ return text.replaceAll('{부정}', ch(['아니다','아닐 수도 있다','항상은 아니다'])); }
+function maybePrefix(t){ return ch(['', '원칙적으로, ', '다만, '])+t; }
 
-const defaultSetSize = 12;
-const defaultTrapLevel = 2;
-const defaultMode = 'statute';
+// ---- options & state
+const defaultSetSize = 20;
+let SET_SIZE = +localStorage.getItem('setSize') || defaultSetSize;
+let TRAP_LEVEL = +localStorage.getItem('trapLevel') || 3;
+let DIFF = localStorage.getItem('diff') || 'high';
+let MODE = localStorage.getItem('mode') || 'mix';
+let AUTO_GEN = localStorage.getItem('autoGen') === 'true';
 
-function getTrapSlice(level, traps){
-  if(!Array.isArray(traps)) return traps;
-  const n = traps.length;
-  if(level >= 3) return traps;
-  if(level == 2) return traps.slice(0, Math.max(2, Math.ceil(n*2/3)));
-  return traps.slice(0, Math.max(1, Math.ceil(n/2)));
-}
-function pickOne(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+document.getElementById('setSize').value = SET_SIZE;
+document.getElementById('setSizeVal').textContent = SET_SIZE;
+document.getElementById('trapLevel').value = TRAP_LEVEL;
+document.getElementById('trapLevelVal').textContent = TRAP_LEVEL;
+document.getElementById('diffSel').value = DIFF;
+document.getElementById('modeSel').value = MODE;
+document.getElementById('autoGen').checked = AUTO_GEN;
 
-// === 로컬 문제은행(요약) ===
-const LOCAL_STATUTES = [
-  { law:"특허법 제9조(개별대리)", link:"https://www.law.go.kr/lsInfoP.do?lsId=001455",
-    truth:"특허절차 대리인이 2인 이상이면 각 대리인이 각각 본인을 대리한다.",
-    traps:["특허절차 대리인이 2인 이상이면 반드시 대표 대리인을 1명 지정해야 한다.","대리인이 2인 이상이면 공동으로만 대리권을 행사하고 각자 대리는 불가하다.","대리인 수와 무관하게 언제나 대표대리인만이 대리권을 행사한다."],
-    note:"대표 지정 의무 없음(개별대리)." },
-  { law:"특허법 제132조의17", link:"https://law.go.kr/lsLawLinkInfo.do?chrClsCd=010202&lsJoLnkSeq=1000690586",
-    truth:"거절결정불복심판은 결정등본 송달일부터 3개월 이내에 청구할 수 있다.",
-    traps:[()=>numericTrap("거절결정불복심판은 결정등본 송달일부터 {기간} 이내에만 청구할 수 있다.",[{num:'30일'},{num:'2개월'},{num:'1개월'}]),"거절결정불복심판은 송달일과 무관하게 언제든 청구할 수 있다.","거절결정불복심판은 발송일 기준 3개월 이내이다."],
-    note:"현행 3개월. 30일은 심결취소소송과 혼동 주의." },
-  { law:"특허법 제17조(절차의 추후보완)", link:"https://www.law.go.kr/lsLawLinkInfo.do?chrClsCd=010202&lsJoLnkSeq=1000735835",
-    truth:"책임질 수 없는 사유가 소멸한 날부터 2개월 내에 보완 가능하나, 원 만료일부터 1년이 지나면 불가하다.",
-    traps:[()=>numericTrap("사유가 소멸하면 {기간} 내에는 언제든 보완 가능하고 1년 상한은 없다.",[{num:'2개월'},{num:'3개월'}]),"사유가 있었다면 기간과 무관하게 언제든 보완 가능하다.","추후보완은 기간의 종류와 무관하게 일률적으로 허용된다."],
-    note:"대상 기간에 제132조의17, 제180조(재심) 포함." },
-  { law:"특허법 제64조(출원공개) / 시행규칙 조기공개", link:"https://www.law.go.kr/lsLawLinkInfo.do?chrClsCd=010202&lsJoLnkSeq=900482636",
-    truth:"우선권 주장이 있으면 그 기초가 된 출원일을 기준으로 1년 6개월 경과 시 공개(조기공개 신청도 가능)된다.",
-    traps:["출원공개 기준일은 항상 국내 출원일만 본다.","조기공개 제도는 없고, 1년 6개월 경과 후에만 공개된다.","우선권이 있더라도 공개 기준일은 변하지 않는다."],
-    note:"조기공개 가능. 기준일 주의." },
-  { law:"특허법 제88조(특허권의 존속기간)", link:"https://www.law.go.kr/lsSideInfoP.do?docCls=jo&joNo=0088&lsiSeq=268273&urlMode=lsScJoRltInfoR",
-    truth:"특허권 존속기간은 ‘특허출원일 후 20년이 되는 날’까지다.",
-    traps:["특허권 존속기간은 ‘설정등록일부터 20년’으로 계산한다.","특허권 존속기간은 일률적으로 25년이다.","존속기간의 기산점은 우선권 주장일이다."],
-    note:"만료일 = 출원일+20년." },
-  { law:"특허법 제89조(연장) 및 단서", link:"https://www.kipo.go.kr/",
-    truth:"허가등에 따른 존속기간 연장은 한 차례만 가능하고, 최대 5년 범위이며, 허가등을 받은 날부터 14년을 초과하여 연장할 수 없다.",
-    traps:["연장은 횟수 제한 없고 최대 10년까지 가능하다.","연장은 여러 번 합산 5년까지 가능하고 14년 상한은 없다.","연장 상한은 허가일과 무관하며 특허 만료일만 본다."],
-    note:"2025.1.21 개정 반영: 14년 상한." },
-  { law:"특허법 제132조의2(특허취소신청)", link:"https://www.law.go.kr/lsLawLinkInfo.do?chrClsCd=010202&lsJoLnkSeq=900483560",
-    truth:"특허취소신청은 ‘누구든지’ 제기 가능하고 법정기간 내에 해야 한다.",
-    traps:["특허취소신청은 ‘이해관계인’만 제기 가능하다.","특허취소신청은 기간 제한이 없다.","특허취소신청은 권리자만 제기 가능하다."],
-    note:"기간과 적격 모두 함정 포인트." },
-  { law:"특허법 제132조(자료의 제출)", link:"https://www.law.go.kr/lsLawLinkInfo.do?chrClsCd=010202&lsJoLnkSeq=1000690923",
-    truth:"법원은 침해소송에서 당사자 신청에 따라 상대방에게 자료제출을 명할 수 있다.",
-    traps:["자료제출명령은 행정기관만 할 수 있고 법원은 할 수 없다.","침해소송에서 자료제출명령 제도는 존재하지 않는다."],
-    note:"소송 단계에서 법원 명령 가능." },
-  { law:"특허법 제186조(심결 등에 대한 소)", link:"https://www.kipo.go.kr/ipt/iptContentView.do?menuCd=SCD0400066",
-    truth:"심결취소소송은 심결(결정) 등본 송달일부터 30일 이내에 제기해야 한다(불변기간).",
-    traps:[()=>numericTrap("심결취소소송은 심결(결정) 등본 송달일부터 {기간} 이내에 제기하면 된다.",[{num:'3개월'},{num:'2개월'}]),"심결취소소송의 제기기간은 불변기간이 아니다."],
-    note:"30일·불변기간. 거불심판 3개월과 혼동 주의." },
-  { law:"민법 제157조(기간의 기산점)", link:"https://www.law.go.kr/lsLinkProc.do?efYd=19971028&joNo=015700",
-    truth:"기간을 일·주·월·연으로 정한 때의 초일은 산입하지 않는 것이 원칙이다.",
-    traps:["민법상 기간 계산은 초일을 산입하는 것이 원칙이다.","초일 불산입은 형사소송에만 적용되고 특허에는 적용되지 않는다."],
-    note:"시험 단골 함정." }
-];
+document.getElementById('setSize').oninput = e=>{
+  SET_SIZE = +e.target.value; localStorage.setItem('setSize', SET_SIZE);
+  document.getElementById('setSizeVal').textContent = SET_SIZE;
+};
+document.getElementById('trapLevel').oninput = e=>{
+  TRAP_LEVEL = +e.target.value; localStorage.setItem('trapLevel', TRAP_LEVEL);
+  document.getElementById('trapLevelVal').textContent = TRAP_LEVEL;
+};
+document.getElementById('diffSel').onchange = e=>{ DIFF = e.target.value; localStorage.setItem('diff', DIFF); };
+document.getElementById('modeSel').onchange = e=>{ MODE = e.target.value; localStorage.setItem('mode', MODE); pickNewSet(true); render(); };
+document.getElementById('autoGen').onchange = e=>{ AUTO_GEN = e.target.checked; localStorage.setItem('autoGen', AUTO_GEN); };
 
-const LOCAL_CASES = [
-  { cite:"대법원 ○○년 ○○후○○○○", link:"https://glaw.scourt.go.kr/",
-    truth:"특허권이 소멸한 경우, 원칙적으로 권리범위확인심판의 확인이익은 부정된다.",
-    traps:["특허권 소멸 후에도 항상 권리범위확인심판의 확인이익이 인정된다.","권리범위확인심판은 특허권이 없는 자만 청구할 수 있다."],
-    note:"확인이익 논점(샘플). 정확 판례번호로 교체 요망." },
-  { cite:"대법원 ○○년 ○○후○○○○", link:"https://glaw.scourt.go.kr/",
-    truth:"기간 계산에서 초일 불산입 원칙을 따르되, 예외가 있을 수 있다.",
-    traps:["기간 계산에서 초일 산입이 원칙이다.","민법의 기간 계산은 특허심판 절차에는 적용되지 않는다."],
-    note:"기간 계산 판례(샘플). 교체 권장." }
-];
+document.getElementById('newSetBtn').onclick = ()=>{ pickNewSet(true); render(); };
+document.getElementById('resetBtn').onclick = ()=>{ localStorage.clear(); recent=[]; correct=0; tried=0; pickNewSet(true); render(); };
+document.getElementById('syncBtn').onclick = ()=>{ syncRemote().then(()=>{ pickNewSet(true); render(); }); };
+document.getElementById('fabGen').onclick = ()=>{ pickNewSet(true); render(); };
 
-function saveOpt(key, val){ localStorage.setItem(key, String(val)); }
-function loadOpt(key, fallback){
-  const v = localStorage.getItem(key);
-  if(v===null) return fallback;
-  if(v==='true') return true; if(v==='false') return false;
-  return isNaN(+v) ? v : +v;
-}
+let STATUTES=[], ENF=[], CASES=[];
+let REM_STAT=[], REM_ENF=[], REM_CASE=[];
+let quiz=[]; let idx=0, correct=0, tried=0; let waiting=false;
+let lastSync = localStorage.getItem('lastSync')||'';
+let recent = JSON.parse(localStorage.getItem('recentTexts')||'[]');
+const NO_REPEAT = 120;
 
-let SET_SIZE = loadOpt('setSize', defaultSetSize);
-let TRAP_LEVEL = loadOpt('trapLevel', defaultTrapLevel);
-let AUTO_GEN = loadOpt('autoGen', false);
-let MODE = loadOpt('mode', defaultMode);
+// local minimal placeholders (dataset comes from /data/*.json)
+STATUTES = [];
+ENF = [];
+CASES = [];
 
-const setSizeEl = document.getElementById('setSize');
-const setSizeVal = document.getElementById('setSizeVal');
-const trapLvEl = document.getElementById('trapLevel');
-const trapLvVal = document.getElementById('trapLevelVal');
-const autoGenChk = document.getElementById('autoGen');
-const modeSel = document.getElementById('modeSel');
-
-setSizeEl.value = SET_SIZE; setSizeVal.textContent = SET_SIZE;
-trapLvEl.value = TRAP_LEVEL; trapLvVal.textContent = TRAP_LEVEL;
-autoGenChk.checked = !!AUTO_GEN;
-modeSel.value = MODE;
-
-setSizeEl.addEventListener('input', ()=>{ SET_SIZE = +setSizeEl.value; setSizeVal.textContent = SET_SIZE; saveOpt('setSize', SET_SIZE); });
-trapLvEl.addEventListener('input', ()=>{ TRAP_LEVEL = +trapLvEl.value; trapLvVal.textContent = TRAP_LEVEL; saveOpt('trapLevel', TRAP_LEVEL); });
-autoGenChk.addEventListener('change', ()=>{ AUTO_GEN = autoGenChk.checked; saveOpt('autoGen', AUTO_GEN); });
-modeSel.addEventListener('change', ()=>{ MODE = modeSel.value; saveOpt('mode', MODE); pickNewSet(true); render(); });
-
-let REMOTE_STATUTES = [];
-let REMOTE_CASES = [];
-let lastSync = localStorage.getItem('lastSync') || '';
-
-async function fetchJSON(path){
-  const url = path + '?v=' + Date.now();
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('네트워크 오류');
-  return res.json();
-}
+// remote sync
+async function fetchJSON(u){ const r = await fetch(u+'?v='+Date.now()); if(!r.ok) throw new Error('네트워크 오류'); return r.json(); }
 async function syncRemote(){
   try{
-    const [q, c] = await Promise.all([fetchJSON('./data/questions.json'), fetchJSON('./data/cases.json')]);
-    REMOTE_STATUTES = Array.isArray(q)? q : [];
-    REMOTE_CASES = Array.isArray(c)? c : [];
+    const [s,e,c] = await Promise.all([
+      fetchJSON('./data/statutes.json'),
+      fetchJSON('./data/enforcement.json'),
+      fetchJSON('./data/cases.json')
+    ]);
+    REM_STAT = Array.isArray(s)? s:[];
+    REM_ENF = Array.isArray(e)? e:[];
+    REM_CASE = Array.isArray(c)? c:[];
     lastSync = new Date().toISOString();
     localStorage.setItem('lastSync', lastSync);
-    document.getElementById('versionBox').textContent = versionText();
     alert('동기화 완료!');
-  }catch(e){
-    alert('동기화 실패: ' + e.message + '\n오프라인 또는 파일 경로를 확인하세요.');
+  }catch(err){ alert('동기화 실패: '+err.message); }
+}
+
+function poolByMode(){
+  const s = [...STATUTES, ...REM_STAT].map(x=>({...x, cat:'본문'}));
+  const e = [...ENF, ...REM_ENF].map(x=>({...x, cat:'시행령'}));
+  const c = [...CASES, ...REM_CASE].map(x=>({...x, cat:'판례'}));
+  if(MODE==='statute') return s;
+  if(MODE==='enf') return e;
+  if(MODE==='case') return c;
+  return [...s, ...e, ...c];
+}
+
+function getTrapSlice(level, traps){
+  const n = traps.length;
+  if(level>=3) return traps;
+  if(level==2) return traps.slice(0, Math.max(3, Math.ceil(n*2/3)));
+  return traps.slice(0, Math.max(2, Math.ceil(n/2)));
+}
+
+function toQuestion(f){
+  const useTruth = Math.random()<0.5;
+  let text = useTruth ? ch(f.truths) : (()=>{
+    let t = ch(getTrapSlice(TRAP_LEVEL, f.traps));
+    if(t.includes('{숫자}')) t = numericSwap(t, [{n:'30',u:'일'},{n:'2',u:'개월'},{n:'3',u:'개월'},{n:'1',u:'년'}]);
+    if(t.includes('{기산}')) t = basisSwap(t);
+    if(t.includes('{주체}')) t = whoSwap(t);
+    if(t.includes('{부정}')) t = boolFlip(t);
+    return maybePrefix(t);
+  })();
+  return { text, answer: useTruth, law: f.law, link: f.link, note: f.note||'', cat: f.cat };
+}
+
+function notRecent(q){ return !recent.includes(q.text); }
+function pushRecent(t){ recent.push(t); if(recent.length>NO_REPEAT) recent = recent.slice(-NO_REPEAT); localStorage.setItem('recentTexts', JSON.stringify(recent)); }
+
+function categoryBalancedPick(bank, n){
+  const cats = ['본문','시행령','판례'];
+  let pick=[];
+  if(MODE==='mix'){
+    for(const cat of cats){
+      const arr = bank.filter(x=>x.cat===cat);
+      if(arr.length) pick.push(arr[Math.floor(Math.random()*arr.length)]);
+    }
   }
+  const rest = bank.filter(x=>!pick.includes(x)).sort(()=>Math.random()-0.5);
+  while(pick.length<n && rest.length){ pick.push(rest.pop()); }
+  return pick.slice(0,n);
 }
-document.getElementById('syncBtn').addEventListener('click', ()=>{ syncRemote().then(()=>{ pickNewSet(true); render(); }); });
 
-let quiz = []; let idx = 0, correct = 0, tried = 0;
-let waitingForConfirm = false; // 확인 버튼 대기 상태
-
-function sourceBank(){
-  if(MODE === 'case'){ return [...LOCAL_CASES, ...REMOTE_CASES]; }
-  else{ return [...LOCAL_STATUTES, ...REMOTE_STATUTES]; }
-}
-function pickTrap(traps){
-  const pool = getTrapSlice(TRAP_LEVEL, traps || []);
-  const item = pickOne(pool);
-  return typeof item === 'function' ? item() : item;
-}
-function mapToQuestion(f){
-  const useTruth = Math.random() < 0.5;
-  const text = useTruth ? f.truth : pickTrap(f.traps);
-  if(MODE === 'case'){ return { text, answer: useTruth, law: f.cite, link: f.link, note: f.note }; }
-  return { text, answer: useTruth, law: f.law, link: f.link, note: f.note };
-}
-function pickNewSet(forceDifferent=false){
-  const bank = sourceBank();
-  const pool = [...bank].sort(()=>Math.random()-0.5).slice(0, Math.min(SET_SIZE, bank.length));
-  const nextQuiz = pool.map(mapToQuestion);
-  if(forceDifferent && JSON.stringify(nextQuiz.map(q=>q.text)) === JSON.stringify(quiz.map(q=>q.text))){
+function pickNewSet(force=false){
+  const bank = poolByMode();
+  if(bank.length===0){ document.getElementById('statement').textContent='데이터가 없습니다. 동기화를 눌러주세요.'; return; }
+  const size = clamp(SET_SIZE, 6, 40);
+  const base = categoryBalancedPick(bank, Math.min(size, bank.length));
+  let draft = base.map(toQuestion).filter(notRecent);
+  if(draft.length < Math.min(size, base.length)){
+    const more = bank.sort(()=>Math.random()-0.5).map(toQuestion).filter(notRecent);
+    draft = draft.concat(more).slice(0, Math.min(size, bank.length));
+  }
+  if(force && JSON.stringify(draft.map(q=>q.text))===JSON.stringify((quiz||[]).map(q=>q.text))){
     return pickNewSet(false);
   }
-  quiz = nextQuiz;
-  idx = 0; correct = 0; tried = 0; waitingForConfirm = false; persist();
+  quiz = draft; idx=0; correct=0; tried=0; waiting=false; render();
 }
-function persist(){
-  localStorage.setItem('quiz', JSON.stringify(quiz));
-  localStorage.setItem('idx', String(idx));
-  localStorage.setItem('correct', String(correct));
-  localStorage.setItem('tried', String(tried));
-}
-function load(){
-  const q = localStorage.getItem('quiz');
-  if(q){ quiz = JSON.parse(q); } else { pickNewSet(); }
-  idx = parseInt(localStorage.getItem('idx')||'0',10);
-  correct = parseInt(localStorage.getItem('correct')||'0',10);
-  tried = parseInt(localStorage.getItem('tried')||'0',10);
-}
+
 function render(){
   const q = quiz[idx];
   document.getElementById('statement').textContent = q? q.text : '문제가 없습니다. 동기화 또는 새 세트를 눌러주세요.';
-  document.getElementById('progress').textContent = q? `문항 ${idx+1} / ${quiz.length}` : '';
+  document.getElementById('progress').textContent = q? `문항 ${idx+1} / ${quiz.length} · ${q?q.cat:''}` : '';
   document.getElementById('scoreBox').textContent = `정답 ${correct} / 시도 ${tried}`;
-  const fb = document.getElementById('feedback');
-  fb.style.display='none'; fb.className='feedback'; fb.innerHTML='';
+  const fb = document.getElementById('feedback'); fb.style.display='none'; fb.className='feedback'; fb.innerHTML='';
   document.getElementById('btnO').classList.remove('disabled');
   document.getElementById('btnX').classList.remove('disabled');
-  waitingForConfirm = false;
+  waiting=false;
 }
-function showFeedback(isRight, q){
+
+function showFeedback(ok, q){
   const fb = document.getElementById('feedback');
-  fb.className = 'feedback ' + (isRight?'correct':'wrong');
-  const right = q.answer ? 'O' : 'X';
-  fb.innerHTML = (isRight? '<strong>정답!</strong>' : '<strong>오답.</strong> 정답은 <b>'+right+'</b>입니다.') +
+  fb.className = 'feedback ' + (ok?'correct':'wrong');
+  const right = q.answer?'O':'X';
+  fb.innerHTML = (ok?'<strong>정답!</strong>':'<strong>오답.</strong> 정답은 <b>'+right+'</b>입니다.') +
     `<br><span>${q.law}</span> — <a class="src" href="${q.link}" target="_blank" rel="noreferrer">근거 보기</a>` +
     (q.note? `<br>${q.note}` : '');
   fb.style.display = 'block';
-
-  // 확인 버튼 추가
-  const btn = document.createElement('button');
-  btn.id = 'confirmBtn';
-  btn.textContent = '확인';
-  btn.onclick = ()=>{ next(); };
-  fb.appendChild(btn);
+  const btn = document.createElement('button'); btn.id='confirmBtn'; btn.textContent='확인';
+  btn.onclick=()=>next(); fb.appendChild(btn);
 }
+
 function answer(userO){
-  if(waitingForConfirm) return; // 중복 입력 방지
-  const q = quiz[idx]; if(!q) return;
-  tried++;
-  const isRight = (userO === q.answer);
-  if(isRight) correct++;
-  // 해설 표시 + 확인 대기
-  showFeedback(isRight, q);
-  persist();
-  waitingForConfirm = true;
-  // OX 버튼 비활성화
-  document.getElementById('btnO').classList.add('disabled');
-  document.getElementById('btnX').classList.add('disabled');
-}
-function next(){
-  idx = (idx + 1) % quiz.length;
-  persist(); render();
+  if(waiting) return; const q = quiz[idx]; if(!q) return;
+  tried++; const ok = (userO===q.answer); if(ok) correct++;
+  showFeedback(ok, q); pushRecent(q.text);
+  waiting=true; document.getElementById('btnO').classList.add('disabled'); document.getElementById('btnX').classList.add('disabled');
 }
 
-document.getElementById('btnO').onclick = ()=>answer(true);
-document.getElementById('btnX').onclick = ()=>answer(false);
-document.getElementById('newSetBtn').onclick = ()=>{ pickNewSet(true); render(); };
-document.getElementById('resetBtn').onclick = ()=>{ localStorage.clear(); pickNewSet(true); render(); };
-document.getElementById('fabGen').addEventListener('click', ()=>{ pickNewSet(true); render(); });
+function next(){ idx=(idx+1)%quiz.length; render(); }
 
+// wire
+document.getElementById('btnO').onclick=()=>answer(true);
+document.getElementById('btnX').onclick=()=>answer(false);
+
+// version
 function versionText(){
-  return "조문 기준: 시행 2025-07-22 | 빌드: 2025-08-10 | 모드: " + (MODE==='case'?'판례 OX':'조문 OX') + (lastSync? (" | 동기화: "+ lastSync.replace('T',' ').slice(0,19)) : '');
+  return "조문 기준: 2025-07-22 시행 반영 | 빌드: FINAL | 모드:"+MODE+" | 난이도:"+DIFF + (lastSync? " | 동기화: "+lastSync.replace('T',' ').slice(0,19):"");
 }
 document.getElementById('versionBox').textContent = versionText();
 
-// PWA 등록 (원래 그대로 유지)
+// service worker
 if('serviceWorker' in navigator){ window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js')); }
 
-load();
-if (AUTO_GEN) { pickNewSet(true); }
-render();
+// boot
+(async function(){
+  try{ await syncRemote(); }catch{}
+  if (AUTO_GEN) pickNewSet(true); else pickNewSet(false);
+})();
 </script>
 </body>
 </html>

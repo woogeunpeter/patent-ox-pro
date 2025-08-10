@@ -1,10 +1,10 @@
 {
-  "name": "특허법 OX 퀴즈 Pro",
+  "name": "특허법 OX 퀴즈 FINAL",
   "short_name": "특허OX",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "모바일 OX 퀴즈 — 최신 특허법 조문 + 판례 모드, 원격 데이터 동기화",
+  "description": "특허법 본문+시행령+판례 혼합 · 고난도 OX 퀴즈 · 원격 동기화",
   "icons": [
     {
       "src": "icon-192.png",
