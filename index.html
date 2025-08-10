@@ -148,11 +148,144 @@ const LOCAL_CASES = [
     note:"기간 계산 판례(샘플). 교체 권장." }
 ];
 
-def saveOpt(key, val): pass  # placeholder
+function saveOpt(key, val){ localStorage.setItem(key, String(val)); }
+function loadOpt(key, fallback){
+  const v = localStorage.getItem(key);
+  if(v===null) return fallback;
+  if(v==='true') return true; if(v==='false') return false;
+  return isNaN(+v) ? v : +v;
+}
 
-def loadOpt(key, fallback): pass  # placeholder
+let SET_SIZE = loadOpt('setSize', defaultSetSize);
+let TRAP_LEVEL = loadOpt('trapLevel', defaultTrapLevel);
+let AUTO_GEN = loadOpt('autoGen', false);
+let MODE = loadOpt('mode', defaultMode);
 
-# The rest of the JS is embedded above; no Python needed here.
+const setSizeEl = document.getElementById('setSize');
+const setSizeVal = document.getElementById('setSizeVal');
+const trapLvEl = document.getElementById('trapLevel');
+const trapLvVal = document.getElementById('trapLevelVal');
+const autoGenChk = document.getElementById('autoGen');
+const modeSel = document.getElementById('modeSel');
+
+setSizeEl.value = SET_SIZE; setSizeVal.textContent = SET_SIZE;
+trapLvEl.value = TRAP_LEVEL; trapLvVal.textContent = TRAP_LEVEL;
+autoGenChk.checked = !!AUTO_GEN;
+modeSel.value = MODE;
+
+setSizeEl.addEventListener('input', ()=>{ SET_SIZE = +setSizeEl.value; setSizeVal.textContent = SET_SIZE; saveOpt('setSize', SET_SIZE); });
+trapLvEl.addEventListener('input', ()=>{ TRAP_LEVEL = +trapLvEl.value; trapLvVal.textContent = TRAP_LEVEL; saveOpt('trapLevel', TRAP_LEVEL); });
+autoGenChk.addEventListener('change', ()=>{ AUTO_GEN = autoGenChk.checked; saveOpt('autoGen', AUTO_GEN); });
+modeSel.addEventListener('change', ()=>{ MODE = modeSel.value; saveOpt('mode', MODE); pickNewSet(true); render(); });
+
+let REMOTE_STATUTES = [];
+let REMOTE_CASES = [];
+let lastSync = localStorage.getItem('lastSync') || '';
+
+async function fetchJSON(path){
+  const url = path + '?v=' + Date.now();
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('네트워크 오류');
+  return res.json();
+}
+async function syncRemote(){
+  try{
+    const [q, c] = await Promise.all([fetchJSON('./data/questions.json'), fetchJSON('./data/cases.json')]);
+    REMOTE_STATUTES = Array.isArray(q)? q : [];
+    REMOTE_CASES = Array.isArray(c)? c : [];
+    lastSync = new Date().toISOString();
+    localStorage.setItem('lastSync', lastSync);
+    document.getElementById('versionBox').textContent = versionText();
+    alert('동기화 완료!');
+  }catch(e){
+    alert('동기화 실패: ' + e.message + '\n오프라인 또는 파일 경로를 확인하세요.');
+  }
+}
+document.getElementById('syncBtn').addEventListener('click', ()=>{ syncRemote().then(()=>{ pickNewSet(true); render(); }); });
+
+let quiz = []; let idx = 0, correct = 0, tried = 0;
+
+function sourceBank(){
+  if(MODE === 'case'){ return [...LOCAL_CASES, ...REMOTE_CASES]; }
+  else{ return [...LOCAL_STATUTES, ...REMOTE_STATUTES]; }
+}
+function pickTrap(traps){
+  const pool = getTrapSlice(TRAP_LEVEL, traps || []);
+  const item = pickOne(pool);
+  return typeof item === 'function' ? item() : item;
+}
+function mapToQuestion(f){
+  const useTruth = Math.random() < 0.5;
+  const text = useTruth ? f.truth : pickTrap(f.traps);
+  if(MODE === 'case'){ return { text, answer: useTruth, law: f.cite, link: f.link, note: f.note }; }
+  return { text, answer: useTruth, law: f.law, link: f.link, note: f.note };
+}
+function pickNewSet(forceDifferent=false){
+  const bank = sourceBank();
+  const pool = [...bank].sort(()=>Math.random()-0.5).slice(0, Math.min(SET_SIZE, bank.length));
+  const nextQuiz = pool.map(mapToQuestion);
+  if(forceDifferent && JSON.stringify(nextQuiz.map(q=>q.text)) === JSON.stringify(quiz.map(q=>q.text))){
+    return pickNewSet(false);
+  }
+  quiz = nextQuiz;
+  idx = 0; correct = 0; tried = 0; persist();
+}
+function persist(){
+  localStorage.setItem('quiz', JSON.stringify(quiz));
+  localStorage.setItem('idx', String(idx));
+  localStorage.setItem('correct', String(correct));
+  localStorage.setItem('tried', String(tried));
+}
+function load(){
+  const q = localStorage.getItem('quiz');
+  if(q){ quiz = JSON.parse(q); } else { pickNewSet(); }
+  idx = parseInt(localStorage.getItem('idx')||'0',10);
+  correct = parseInt(localStorage.getItem('correct')||'0',10);
+  tried = parseInt(localStorage.getItem('tried')||'0',10);
+}
+function render(){
+  const q = quiz[idx];
+  document.getElementById('statement').textContent = q? q.text : '문제가 없습니다. 동기화 또는 새 세트를 눌러주세요.';
+  document.getElementById('progress').textContent = q? `문항 ${idx+1} / ${quiz.length}` : '';
+  document.getElementById('scoreBox').textContent = `정답 ${correct} / 시도 ${tried}`;
+  const fb = document.getElementById('feedback');
+  fb.style.display='none'; fb.className='feedback'; fb.innerHTML='';
+}
+function answer(userO){
+  const q = quiz[idx]; if(!q) return;
+  tried++;
+  const isRight = (userO === q.answer);
+  const fb = document.getElementById('feedback');
+  if(isRight){
+    correct++; fb.classList.add('correct');
+    fb.innerHTML = `<strong>정답!</strong> <span>${q.law}</span> — <a class="src" href="${q.link}" target="_blank" rel="noreferrer">근거 보기</a><br>${q.note||""}`;
+  }else{
+    fb.classList.add('wrong');
+    const right = q.answer ? 'O' : 'X';
+    fb.innerHTML = `<strong>오답.</strong> 정답은 <b>${right}</b>입니다.<br><span>${q.law}</span> — <a class="src" href="${q.link}" target="_blank" rel="noreferrer">근거 보기</a><br>${q.note||""}`;
+  }
+  fb.style.display='block';
+  persist();
+  setTimeout(()=>{ next(); }, 950);
+}
+function next(){ idx = (idx + 1) % quiz.length; persist(); render(); }
+
+document.getElementById('btnO').onclick = ()=>answer(true);
+document.getElementById('btnX').onclick = ()=>answer(false);
+document.getElementById('newSetBtn').onclick = ()=>{ pickNewSet(true); render(); };
+document.getElementById('resetBtn').onclick = ()=>{ localStorage.clear(); pickNewSet(true); render(); };
+document.getElementById('fabGen').addEventListener('click', ()=>{ pickNewSet(true); render(); });
+
+function versionText(){
+  return "조문 기준: 시행 2025-07-22 | 빌드: 2025-08-10 | 모드: " + (MODE==='case'?'판례 OX':'조문 OX') + (lastSync? (" | 동기화: "+ lastSync.replace('T',' ').slice(0,19)) : '');
+}
+document.getElementById('versionBox').textContent = versionText();
+
+if('serviceWorker' in navigator){ window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js')); }
+
+load();
+if (AUTO_GEN) { pickNewSet(true); }
+render();
 </script>
 </body>
 </html>
