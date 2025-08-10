@@ -1,4 +1,41 @@
 {
   "updated": "2025-08-10",
-  "packs": []
+  "packs": [
+    {
+      "name": "총칙·요건·불특허발명",
+      "file": "pack_statutes_core.json"
+    },
+    {
+      "name": "출원·심사·보정·분할·변경·분리",
+      "file": "pack_procedure.json"
+    },
+    {
+      "name": "권리관계·실시권·연장·수용",
+      "file": "pack_rights.json"
+    },
+    {
+      "name": "심판·소송(개요)",
+      "file": "pack_trials.json"
+    },
+    {
+      "name": "침해·구제·벌칙(개요)",
+      "file": "pack_infringement.json"
+    },
+    {
+      "name": "PCT·우선권",
+      "file": "pack_pct.json"
+    },
+    {
+      "name": "출원인이익·직무발명",
+      "file": "pack_benefits.json"
+    },
+    {
+      "name": "시행령 주요 조항(개요)",
+      "file": "pack_regulation.json"
+    },
+    {
+      "name": "주요 판례(개요)",
+      "file": "pack_case_law.json"
+    }
+  ]
 }
