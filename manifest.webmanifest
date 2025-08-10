@@ -1,19 +1,19 @@
 {
-  "name": "법령 OX 문제 편집기 (Blank)",
-  "short_name": "법령 OX",
+  "name": "특허법 OX (PWA)",
+  "short_name": "특허법 OX",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-180.png",
-      "sizes": "180x180",
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png"
     },
     {
