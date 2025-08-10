@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8">
+<title>Hard Reset</title>
+<body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Apple SD Gothic Neo,Helvetica,Arial,sans-serif;">
+<h1>캐시/서비스워커 초기화 중…</h1>
+<pre id="log"></pre>
+<script>
+(async ()=>{
+  const log = (m)=>{ document.getElementById('log').textContent += m+"\n"; };
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs){ await r.unregister(); log('SW unregistered'); }
+    } else { log('No SW support'); }
+  }catch(e){ log('SW err: '+e.message); }
+  try{
+    if(window.caches){
+      const keys = await caches.keys();
+      for(const k of keys){ await caches.delete(k); log('Cache deleted: '+k); }
+    }
+  }catch(e){ log('Cache err: '+e.message); }
+  try{ localStorage.clear(); sessionStorage.clear(); log('Storage cleared'); }catch(e){}
+  setTimeout(()=>{
+    const bust = '?v=' + Date.now();
+    location.href = './' + bust;
+  }, 800);
+})();
+</script>
+</body></html>

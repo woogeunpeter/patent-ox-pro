@@ -2,6 +2,10 @@
   "updated": "2025-08-10",
   "packs": [
     {
+      "name": "[TEST] 디버그 팩 (최상단)",
+      "file": "pack_debug.json"
+    },
+    {
       "name": "총칙·요건·불특허발명",
       "file": "pack_statutes_core.json"
     },
