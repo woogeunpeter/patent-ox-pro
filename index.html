@@ -2,70 +2,67 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>특허법 OX 퀴즈 · PRO</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>특허법 OX 퀴즈</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#111" />
 </head>
 <body>
-  <header class="appbar">
-    <div class="title">특허법 OX 퀴즈 <span class="badge">PRO</span></div>
-    <div class="actions">
-      <button id="syncBtn" class="btn ghost" title="데이터 동기화">동기화</button>
-      <button id="newSetBtn" class="btn ghost" title="새 문제 세트">새 세트</button>
-      <button id="resetBtn" class="btn ghost" title="점수 리셋">리셋</button>
-    </div>
+  <header class="appbar safe-top">
+    <div class="brand">특허법 OX</div>
+    <nav class="actions">
+      <button id="btn-new" class="ghost" title="새 문제">새 문제</button>
+      <a href="hardreset.html" class="ghost" title="초기화">초기화</a>
+    </nav>
   </header>
 
-  <main class="wrap">
-    <section class="controls">
-      <label>난이도
-        <select id="diffSel">
-          <option value="mid">중</option>
-          <option value="high" selected>상</option>
-        </select>
-      </label>
-      <label>문항 수
-        <input type="range" id="setSize" min="6" max="50" step="1">
-        <span id="setSizeVal"></span>
-      </label>
-      <label>함정 강도
-        <input type="range" id="trapLevel" min="1" max="3" step="1">
-        <span id="trapLevelVal"></span>
-      </label>
-      <label>모드
-        <select id="modeSel">
-          <option value="mix" selected>혼합(본문+시행령+판례)</option>
-          <option value="statute">본문만</option>
-          <option value="enf">시행령만</option>
-          <option value="case">판례만</option>
-        </select>
-      </label>
-      <label class="check">
-        <input type="checkbox" id="autoGen"> 앱 열 때 자동 새 세트
-      </label>
+  <main class="container">
+    <section id="packSection" class="card">
+      <h2>문제팩</h2>
+      <div id="packList" class="pack-list"></div>
     </section>
 
-    <section class="card">
-      <p id="statement" class="stmt">불러오는 중…</p>
-      <div class="progress" id="progress"></div>
-      <div class="btns">
-        <button class="big o" id="btnO">O</button>
-        <button class="big x" id="btnX">X</button>
+    <section id="quizSection" class="card hidden">
+      <div id="meta" class="meta"></div>
+      <pre id="question" class="question"></pre>
+
+      <div class="controls">
+        <button id="btn-o" class="primary">O</button>
+        <button id="btn-x" class="danger">X</button>
       </div>
-      <div id="feedback" class="feedback" style="display:none"></div>
-    </section>
 
-    <section class="meta">
-      <div id="scoreBox">정답 0 / 시도 0</div>
-      <div id="versionBox" class="foot"></div>
+      <div class="after hidden" id="after">
+        <div id="result" class="result"></div>
+        <div class="after-actions">
+          <button id="btn-explain" class="outline">해설 보기</button>
+          <button id="btn-hide" class="ghost">이 문제 다시 안보기</button>
+          <button id="btn-next" class="primary">다음 문제</button>
+        </div>
+      </div>
     </section>
   </main>
 
-  <button id="fabGen">새 문제 생성</button>
+  <dialog id="explainDialog">
+    <article>
+      <header>
+        <strong>해설 · 원문</strong>
+        <button id="dlgClose" aria-label="닫기">×</button>
+      </header>
+      <div id="explainBody" class="explain-body"></div>
+    </article>
+  </dialog>
 
-  <script type="module" src="main.js"></script>
+  <footer class="safe-bottom">
+    <small>출처: Casenote 원문 (데이터 파일 내 full_text 사용)</small>
+  </footer>
+
+  <script src="packs.js"></script>
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+    }
+  </script>
 </body>
 </html>

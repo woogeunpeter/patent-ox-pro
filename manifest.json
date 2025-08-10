@@ -1,0 +1,9 @@
+{
+  "name": "특허법 OX 퀴즈",
+  "short_name": "Patent OX",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#111111",
+  "icons": []
+}
