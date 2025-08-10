@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>특허법 OX — PWA URL 로더 포함</title>
+<title>특허법 OX — PWA URL 로더 + 강제 새로고침</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,9 +16,9 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica Neue', Arial, sans-serif;
          margin: 0; background: #f6f7f9; color: #111; }
   header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; gap: 8px; align-items: center; z-index: 10;
-           box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+           box-shadow: 0 2px 12px rgba(0,0,0,.04); flex-wrap: wrap;}
   header strong { white-space: nowrap; }
-  header input[type="text"]{ flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; }
+  header input[type="text"]{ flex: 1; min-width: 180px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; }
   header button { padding: 10px 12px; border: 1px solid #dbe1ea; background: #fff; border-radius: 10px; cursor: pointer; }
   header button:hover { background: #f1f5f9; }
   header button:active { transform: translateY(1px); }
@@ -73,6 +73,7 @@
   <button id="btnQuiz">랜덤 풀이</button>
   <button id="btnQuizExit" style="display:none">퀴즈 종료</button>
   <button id="btnReset">초기화</button>
+  <button id="btnHardRefresh" title="서비스워커/캐시 삭제 후 강제 새로고침">강제 새로고침</button>
 </header>
 
 <div id="quizBar" class="quizbar">
@@ -115,7 +116,6 @@ function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
 let items = load();
 let settings = loadSettings();
 
-// ===== URL Param Parser =====
 function getParam(name){
   const u = new URL(location.href);
   return u.searchParams.get(name);
@@ -138,13 +138,35 @@ async function importFromUrl(url, silent=false){
   }
 }
 
-// ===== Hash(딥링크 편집) =====
+// 강제 새로고침: SW + caches 제거 후 reload
+async function hardRefresh(){
+  const ok = confirm("서비스워커/캐시를 삭제하고 새로고침할까요? (문제 데이터는 유지됩니다)");
+  if (!ok) return;
+  try{
+    // delete caches
+    if (window.caches && caches.keys){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    // unregister all SW
+    if ('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch(e){
+    console.warn("hardRefresh error:", e);
+  } finally {
+    // small delay then reload
+    setTimeout(()=>location.reload(), 200);
+  }
+}
+
+// Hash deep link
 (function parseHash(){
   const m = location.hash.match(/edit=([A-Za-z0-9\-]+)/);
   if (m){ settings.editMode = true; settings.currentEditId = m[1]; saveSettings(settings); }
 })();
 
-// ===== Helpers =====
 function h(tag, attrs={}, ...children){
   const el = document.createElement(tag);
   for (const [k,v] of Object.entries(attrs)) {
@@ -160,7 +182,7 @@ function h(tag, attrs={}, ...children){
   return el;
 }
 
-// Diff
+// Diff helpers
 function diffTokens(a, b){
   const wa = (a||"").split(/(\s+)/), wb = (b||"").split(/(\s+)/);
   const n = wa.length, m = wb.length;
@@ -201,7 +223,7 @@ function renderDiff(aRaw, qRaw){
   return "<div class='hl'><div class='title'>원문 대비 문제문 차이</div><div><div class='small muted'>왼쪽=원문, 오른쪽=문제문</div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px'><div>"+left.join("")+"</div><div>"+right.join("")+"</div></div></div>";
 }
 
-// ===== QUIZ & Shuffle =====
+// QUIZ & Shuffle
 let quiz = { active:false, pool:[], picked:0, answered:0, correct:0 };
 function resetQuizState(){
   quiz.answered = 0; quiz.correct = 0;
@@ -256,7 +278,6 @@ function updateQuizBar(){
   if (elF) elF.style.width = pct + "%";
 }
 
-// ===== Render =====
 function render(){
   document.getElementById("editState").textContent = settings.editMode ? "ON" : "OFF";
   const q = document.getElementById("search").value.trim().toLowerCase();
@@ -364,7 +385,6 @@ function labelTextarea(title, it, key){
   return wrap;
 }
 
-// 선택(정답 시 채점/진행 갱신)
 function selectAnswer(it, val){
   it.answerUser = val;
   if (quiz.active && quiz.pool.includes(it)){
@@ -407,7 +427,6 @@ function openEditorFor(id){
   if (target) toggleEditor(target, true, true);
 }
 
-// ===== Buttons =====
 document.getElementById("btnAdd").addEventListener("click", ()=>{
   const it = { id: uid(), articleLabel:"", questionText:"(O/X)", answer:"", explanation:"", compareNote:"", trapTypes:"", markReview:false };
   items.unshift(it);
@@ -433,7 +452,6 @@ document.getElementById("btnExportCsv").addEventListener("click", ()=>{
   a.click();
 });
 
-// 파일 임포트(웹 사파리에선 OK, PWA에선 안 될 수 있음)
 document.getElementById("btnImport").addEventListener("click", (ev)=>{
   if (ev.altKey){
     const text = prompt("JSON 붙여넣기(배열 형태):");
@@ -472,32 +490,11 @@ document.getElementById("btnImport").addEventListener("click", (ev)=>{
   input.click();
 });
 
-// URL 임포트: PWA에서도 작동
 document.getElementById("btnImportUrl").addEventListener("click", async ()=>{
   const prev = localStorage.getItem(LAST_URL_KEY) || "";
   const url = prompt("불러올 JSON 파일의 URL을 입력하세요", prev || "https://example.com/patent_ox_items.json");
   if (!url) return;
   await importFromUrl(url);
-});
-
-window.addEventListener('dragover', (e)=>{ e.preventDefault(); });
-window.addEventListener('drop', (e)=>{
-  e.preventDefault();
-  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if (file && /json$/i.test(file.name)){
-    const reader = new FileReader();
-    reader.onload = () => {
-      try{
-        const data = JSON.parse(reader.result);
-        if (!Array.isArray(data)) throw new Error("JSON 최상위는 배열이어야 합니다.");
-        items = data; save(items); render();
-        alert(`불러오기 완료: ${items.length}문항`);
-      } catch(e){
-        alert("JSON 파싱 실패: " + e.message);
-      }
-    };
-    reader.readAsText(file, 'utf-8');
-  }
 });
 
 document.getElementById("btnReset").addEventListener("click", ()=>{
@@ -516,12 +513,13 @@ document.getElementById("btnToggleEdit").addEventListener("click", ()=>{
 document.getElementById("btnShuffle").addEventListener("click", shuffleItems);
 document.getElementById("btnQuiz").addEventListener("click", startQuiz);
 document.getElementById("btnQuizExit").addEventListener("click", exitQuiz);
+document.getElementById("btnHardRefresh").addEventListener("click", hardRefresh);
 document.getElementById("search").addEventListener("input", render);
 
 // 초기 렌더
 render();
 
-// ===== 부트: ?load=... 있으면 자동 로드, 없으면 마지막 URL 자동 로드 시도 =====
+// 부트: ?load=... 있으면 자동 로드, 없으면 마지막 URL 자동 로드 시도
 (async function bootAutoLoad(){
   const urlParam = getParam("load");
   if (urlParam){
@@ -535,7 +533,7 @@ render();
   render();
 })();
 
-// ===== PWA SW 등록 =====
+// PWA SW 등록
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('service-worker_blank.js').catch(console.error);
