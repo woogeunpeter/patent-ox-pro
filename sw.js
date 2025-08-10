@@ -1,6 +1,6 @@
-const CACHE='patent-ox-final-v1';
+const CACHE='patent-ox-ui-final-v1';
 const ABS=(p)=>new URL(p,self.location).toString();
-const ASSETS=['index.html','manifest.webmanifest','sw.js','data/statutes.json','data/enforcement.json','data/cases.json'].map(ABS);
+const ASSETS=['index.html','style.css','main.js','manifest.webmanifest','sw.js','packs.json','icon-192.png','icon-512.png'].map(ABS);
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});
 self.addEventListener('fetch',e=>{

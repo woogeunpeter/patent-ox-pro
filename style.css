@@ -1,0 +1,30 @@
+:root{--safe-top: env(safe-area-inset-top, 0px);--bg:#ffffff;--ink:#111;--muted:#666;--card:#fff;--bd:#e6e6e6;--brand:#111;--ok:#2e7d32;--no:#c62828}
+*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Apple SD Gothic Neo,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-top:calc(var(--safe-top) + 8px)}
+.wrap{max-width:940px;margin:0 auto;padding:22px}
+.appbar{position:sticky;top:0;background:#fff;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:calc(var(--safe-top) + 8px) 14px 8px;border-bottom:1px solid #f2f2f2}
+.title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.badge{background:#111;color:#fff;font-size:11px;padding:3px 8px;border-radius:999px}
+.actions{display:flex;gap:8px}
+.btn{border:1px solid #e0e0e0;background:#fafafa;border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff}
+.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.controls label{font-size:12px;color:#444;display:flex;gap:6px;align-items:center}
+.controls input[type=range]{accent-color:#111}
+.controls select{padding:6px 8px;border:1px solid #ddd;border-radius:8px;background:#fff}
+.check{gap:8px}
+.card{border:1px solid var(--bd);border-radius:16px;background:var(--card);box-shadow:0 2px 12px rgba(0,0,0,.05);padding:20px;margin:16px 0}
+.stmt{font-size:18px;line-height:1.66;margin:0 0 12px;white-space:pre-wrap;word-break:break-word}
+.progress{font-size:13px;color:var(--muted)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.big{font-size:20px;padding:16px;border-radius:12px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
+.big:active{transform:scale(.98)}
+.o{border-color:#bfe5bf;background:#f5fff5}
+.x{border-color:#f3bfbf;background:#fff6f6}
+.feedback{border-left:4px solid #eee;padding:12px 14px;background:#fafafa;border-radius:8px;margin-top:12px;font-size:14px}
+.feedback.correct{border-left-color:var(--ok);background:#eef8ee}
+.feedback.wrong{border-left-color:var(--no);background:#fdecec}
+a.src{color:#2b5cff;text-decoration:none}
+.meta{font-size:12px;color:var(--muted)}
+.foot{margin-top:12px}
+#fabGen{position:fixed;right:16px;bottom:18px;border:0;border-radius:999px;padding:14px 18px;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.18);background:var(--brand);color:#fff;z-index:999}

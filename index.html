@@ -3,277 +3,69 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>특허법 OX 퀴즈 (FINAL)</title>
+  <title>특허법 OX 퀴즈 · PRO</title>
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <style>
-    :root { --safe-top: env(safe-area-inset-top, 0px); }
-    html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Apple SD Gothic Neo,Helvetica,Arial,sans-serif;background:#fff;color:#111}
-    body{ padding-top: calc(var(--safe-top) + 8px); }
-    .wrap{max-width:860px;margin:0 auto;padding:22px}
-    header{position:sticky; top:0; padding-top:calc(var(--safe-top) + 6px); background:#fff; z-index:10; display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    h1{font-size:20px;margin:0;display:flex;align-items:center;gap:6px}
-    .badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#f1f1f1;font-size:11px;color:#555}
-    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .toolbar button, #fabGen{font-size:14px;padding:12px 14px;border-radius:10px;border:1px solid #ddd;background:#fafafa}
-    #opts{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
-    #opts label{font-size:12px;color:#444;display:flex;gap:6px;align-items:center}
-    input[type='range'], select{accent-color:#111}
-    select{padding:6px 8px;border:1px solid #ddd;border-radius:8px;background:#fff}
-    .card{border:1px solid #e6e6e6;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-    .stmt{font-size:18px;line-height:1.6;margin:0 0 10px}
-    .meta{font-size:12px;color:#666;margin-top:6px}
-    .progress{font-size:13px;color:#666}
-    .btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    button.big{font-size:18px;padding:16px;border-radius:12px;border:1px solid #ddd;background:#fafafa}
-    button.big:active{transform:scale(.98)}
-    .o{border-color:#bfe5bf;background:#f5fff5}
-    .x{border-color:#f3bfbf;background:#fff6f6}
-    .feedback{border-left:4px solid #eee;padding:12px 14px;background:#fafafa;border-radius:8px;margin-top:12px;font-size:14px}
-    .correct{border-left-color:#2e7d32;background:#eef8ee}
-    .wrong{border-left-color:#c62828;background:#fdecec}
-    a.src{color:#2b5cff;text-decoration:none}
-    .foot{margin-top:18px;font-size:12px;color:#666}
-    #fabGen{position:fixed;right:16px;bottom:20px;border:0;border-radius:999px;padding:14px 18px;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.18);background:#111;color:#fff;z-index:999;}
-    #confirmBtn{margin-top:12px;padding:12px 16px;border-radius:10px;border:1px solid #cfd8dc;background:#f0f4f8;font-size:14px}
-    #confirmBtn:active{transform:scale(.98)}
-    .disabled{opacity:.5; pointer-events:none}
-  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>특허법 OX 퀴즈 <span class="badge">FINAL</span></h1>
-    <div class="toolbar">
-      <button id="newSetBtn" title="새 문제 세트">새 세트</button>
-      <button id="resetBtn" title="점수 리셋">리셋</button>
-      <button id="syncBtn" title="원격 데이터 동기화">동기화</button>
+  <header class="appbar">
+    <div class="title">특허법 OX 퀴즈 <span class="badge">PRO</span></div>
+    <div class="actions">
+      <button id="syncBtn" class="btn ghost" title="데이터 동기화">동기화</button>
+      <button id="newSetBtn" class="btn ghost" title="새 문제 세트">새 세트</button>
+      <button id="resetBtn" class="btn ghost" title="점수 리셋">리셋</button>
     </div>
   </header>
 
-  <div id="opts">
-    <label>난이도
-      <select id="diffSel">
-        <option value="mid">중</option>
-        <option value="high" selected>상</option>
-      </select>
-    </label>
-    <label>문항 수 <input type="range" id="setSize" min="6" max="40" step="1"><span id="setSizeVal"></span></label>
-    <label>함정 강도 <input type="range" id="trapLevel" min="1" max="3" step="1"><span id="trapLevelVal"></span></label>
-    <label>모드
-      <select id="modeSel">
-        <option value="mix" selected>혼합(본문+시행령+판례)</option>
-        <option value="statute">본문만</option>
-        <option value="enf">시행령만</option>
-        <option value="case">판례만</option>
-      </select>
-    </label>
-    <label><input type="checkbox" id="autoGen"/> 앱 열 때 자동 새 세트</label>
-  </div>
+  <main class="wrap">
+    <section class="controls">
+      <label>난이도
+        <select id="diffSel">
+          <option value="mid">중</option>
+          <option value="high" selected>상</option>
+        </select>
+      </label>
+      <label>문항 수
+        <input type="range" id="setSize" min="6" max="50" step="1">
+        <span id="setSizeVal"></span>
+      </label>
+      <label>함정 강도
+        <input type="range" id="trapLevel" min="1" max="3" step="1">
+        <span id="trapLevelVal"></span>
+      </label>
+      <label>모드
+        <select id="modeSel">
+          <option value="mix" selected>혼합(본문+시행령+판례)</option>
+          <option value="statute">본문만</option>
+          <option value="enf">시행령만</option>
+          <option value="case">판례만</option>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="autoGen"> 앱 열 때 자동 새 세트
+      </label>
+    </section>
 
-  <div class="card">
-    <p id="statement" class="stmt">불러오는 중…</p>
-    <div class="progress" id="progress"></div>
-    <div class="btns">
-      <button class="big o" id="btnO">O</button>
-      <button class="big x" id="btnX">X</button>
-    </div>
-    <div id="feedback" class="feedback" style="display:none"></div>
-  </div>
+    <section class="card">
+      <p id="statement" class="stmt">불러오는 중…</p>
+      <div class="progress" id="progress"></div>
+      <div class="btns">
+        <button class="big o" id="btnO">O</button>
+        <button class="big x" id="btnX">X</button>
+      </div>
+      <div id="feedback" class="feedback" style="display:none"></div>
+    </section>
 
-  <div class="meta" id="scoreBox">정답 0 / 시도 0</div>
-  <div class="foot" id="versionBox"></div>
-</div>
+    <section class="meta">
+      <div id="scoreBox">정답 0 / 시도 0</div>
+      <div id="versionBox" class="foot"></div>
+    </section>
+  </main>
 
-<button id="fabGen">새 문제 생성</button>
+  <button id="fabGen">새 문제 생성</button>
 
-<script>
-// ---- helpers & trap transformers
-const ch = (a)=>a[Math.floor(Math.random()*a.length)];
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-function numericSwap(text, pairs){ const p = ch(pairs); return text.replaceAll('{숫자}', p.n).replaceAll('{단위}', p.u||''); }
-function basisSwap(text){ return text.replaceAll('{기산}', ch(['송달일','발송일','공고일','접수일','통지일'])); }
-function whoSwap(text){ return text.replaceAll('{주체}', ch(['누구든지','이해관계인','권리자','출원인','대리인'])); }
-function boolFlip(text){ return text.replaceAll('{부정}', ch(['아니다','아닐 수도 있다','항상은 아니다'])); }
-function maybePrefix(t){ return ch(['', '원칙적으로, ', '다만, '])+t; }
-
-// ---- options & state
-const defaultSetSize = 20;
-let SET_SIZE = +localStorage.getItem('setSize') || defaultSetSize;
-let TRAP_LEVEL = +localStorage.getItem('trapLevel') || 3;
-let DIFF = localStorage.getItem('diff') || 'high';
-let MODE = localStorage.getItem('mode') || 'mix';
-let AUTO_GEN = localStorage.getItem('autoGen') === 'true';
-
-document.getElementById('setSize').value = SET_SIZE;
-document.getElementById('setSizeVal').textContent = SET_SIZE;
-document.getElementById('trapLevel').value = TRAP_LEVEL;
-document.getElementById('trapLevelVal').textContent = TRAP_LEVEL;
-document.getElementById('diffSel').value = DIFF;
-document.getElementById('modeSel').value = MODE;
-document.getElementById('autoGen').checked = AUTO_GEN;
-
-document.getElementById('setSize').oninput = e=>{
-  SET_SIZE = +e.target.value; localStorage.setItem('setSize', SET_SIZE);
-  document.getElementById('setSizeVal').textContent = SET_SIZE;
-};
-document.getElementById('trapLevel').oninput = e=>{
-  TRAP_LEVEL = +e.target.value; localStorage.setItem('trapLevel', TRAP_LEVEL);
-  document.getElementById('trapLevelVal').textContent = TRAP_LEVEL;
-};
-document.getElementById('diffSel').onchange = e=>{ DIFF = e.target.value; localStorage.setItem('diff', DIFF); };
-document.getElementById('modeSel').onchange = e=>{ MODE = e.target.value; localStorage.setItem('mode', MODE); pickNewSet(true); render(); };
-document.getElementById('autoGen').onchange = e=>{ AUTO_GEN = e.target.checked; localStorage.setItem('autoGen', AUTO_GEN); };
-
-document.getElementById('newSetBtn').onclick = ()=>{ pickNewSet(true); render(); };
-document.getElementById('resetBtn').onclick = ()=>{ localStorage.clear(); recent=[]; correct=0; tried=0; pickNewSet(true); render(); };
-document.getElementById('syncBtn').onclick = ()=>{ syncRemote().then(()=>{ pickNewSet(true); render(); }); };
-document.getElementById('fabGen').onclick = ()=>{ pickNewSet(true); render(); };
-
-let STATUTES=[], ENF=[], CASES=[];
-let REM_STAT=[], REM_ENF=[], REM_CASE=[];
-let quiz=[]; let idx=0, correct=0, tried=0; let waiting=false;
-let lastSync = localStorage.getItem('lastSync')||'';
-let recent = JSON.parse(localStorage.getItem('recentTexts')||'[]');
-const NO_REPEAT = 120;
-
-// local minimal placeholders (dataset comes from /data/*.json)
-STATUTES = [];
-ENF = [];
-CASES = [];
-
-// remote sync
-async function fetchJSON(u){ const r = await fetch(u+'?v='+Date.now()); if(!r.ok) throw new Error('네트워크 오류'); return r.json(); }
-async function syncRemote(){
-  try{
-    const [s,e,c] = await Promise.all([
-      fetchJSON('./data/statutes.json'),
-      fetchJSON('./data/enforcement.json'),
-      fetchJSON('./data/cases.json')
-    ]);
-    REM_STAT = Array.isArray(s)? s:[];
-    REM_ENF = Array.isArray(e)? e:[];
-    REM_CASE = Array.isArray(c)? c:[];
-    lastSync = new Date().toISOString();
-    localStorage.setItem('lastSync', lastSync);
-    alert('동기화 완료!');
-  }catch(err){ alert('동기화 실패: '+err.message); }
-}
-
-function poolByMode(){
-  const s = [...STATUTES, ...REM_STAT].map(x=>({...x, cat:'본문'}));
-  const e = [...ENF, ...REM_ENF].map(x=>({...x, cat:'시행령'}));
-  const c = [...CASES, ...REM_CASE].map(x=>({...x, cat:'판례'}));
-  if(MODE==='statute') return s;
-  if(MODE==='enf') return e;
-  if(MODE==='case') return c;
-  return [...s, ...e, ...c];
-}
-
-function getTrapSlice(level, traps){
-  const n = traps.length;
-  if(level>=3) return traps;
-  if(level==2) return traps.slice(0, Math.max(3, Math.ceil(n*2/3)));
-  return traps.slice(0, Math.max(2, Math.ceil(n/2)));
-}
-
-function toQuestion(f){
-  const useTruth = Math.random()<0.5;
-  let text = useTruth ? ch(f.truths) : (()=>{
-    let t = ch(getTrapSlice(TRAP_LEVEL, f.traps));
-    if(t.includes('{숫자}')) t = numericSwap(t, [{n:'30',u:'일'},{n:'2',u:'개월'},{n:'3',u:'개월'},{n:'1',u:'년'}]);
-    if(t.includes('{기산}')) t = basisSwap(t);
-    if(t.includes('{주체}')) t = whoSwap(t);
-    if(t.includes('{부정}')) t = boolFlip(t);
-    return maybePrefix(t);
-  })();
-  return { text, answer: useTruth, law: f.law, link: f.link, note: f.note||'', cat: f.cat };
-}
-
-function notRecent(q){ return !recent.includes(q.text); }
-function pushRecent(t){ recent.push(t); if(recent.length>NO_REPEAT) recent = recent.slice(-NO_REPEAT); localStorage.setItem('recentTexts', JSON.stringify(recent)); }
-
-function categoryBalancedPick(bank, n){
-  const cats = ['본문','시행령','판례'];
-  let pick=[];
-  if(MODE==='mix'){
-    for(const cat of cats){
-      const arr = bank.filter(x=>x.cat===cat);
-      if(arr.length) pick.push(arr[Math.floor(Math.random()*arr.length)]);
-    }
-  }
-  const rest = bank.filter(x=>!pick.includes(x)).sort(()=>Math.random()-0.5);
-  while(pick.length<n && rest.length){ pick.push(rest.pop()); }
-  return pick.slice(0,n);
-}
-
-function pickNewSet(force=false){
-  const bank = poolByMode();
-  if(bank.length===0){ document.getElementById('statement').textContent='데이터가 없습니다. 동기화를 눌러주세요.'; return; }
-  const size = clamp(SET_SIZE, 6, 40);
-  const base = categoryBalancedPick(bank, Math.min(size, bank.length));
-  let draft = base.map(toQuestion).filter(notRecent);
-  if(draft.length < Math.min(size, base.length)){
-    const more = bank.sort(()=>Math.random()-0.5).map(toQuestion).filter(notRecent);
-    draft = draft.concat(more).slice(0, Math.min(size, bank.length));
-  }
-  if(force && JSON.stringify(draft.map(q=>q.text))===JSON.stringify((quiz||[]).map(q=>q.text))){
-    return pickNewSet(false);
-  }
-  quiz = draft; idx=0; correct=0; tried=0; waiting=false; render();
-}
-
-function render(){
-  const q = quiz[idx];
-  document.getElementById('statement').textContent = q? q.text : '문제가 없습니다. 동기화 또는 새 세트를 눌러주세요.';
-  document.getElementById('progress').textContent = q? `문항 ${idx+1} / ${quiz.length} · ${q?q.cat:''}` : '';
-  document.getElementById('scoreBox').textContent = `정답 ${correct} / 시도 ${tried}`;
-  const fb = document.getElementById('feedback'); fb.style.display='none'; fb.className='feedback'; fb.innerHTML='';
-  document.getElementById('btnO').classList.remove('disabled');
-  document.getElementById('btnX').classList.remove('disabled');
-  waiting=false;
-}
-
-function showFeedback(ok, q){
-  const fb = document.getElementById('feedback');
-  fb.className = 'feedback ' + (ok?'correct':'wrong');
-  const right = q.answer?'O':'X';
-  fb.innerHTML = (ok?'<strong>정답!</strong>':'<strong>오답.</strong> 정답은 <b>'+right+'</b>입니다.') +
-    `<br><span>${q.law}</span> — <a class="src" href="${q.link}" target="_blank" rel="noreferrer">근거 보기</a>` +
-    (q.note? `<br>${q.note}` : '');
-  fb.style.display = 'block';
-  const btn = document.createElement('button'); btn.id='confirmBtn'; btn.textContent='확인';
-  btn.onclick=()=>next(); fb.appendChild(btn);
-}
-
-function answer(userO){
-  if(waiting) return; const q = quiz[idx]; if(!q) return;
-  tried++; const ok = (userO===q.answer); if(ok) correct++;
-  showFeedback(ok, q); pushRecent(q.text);
-  waiting=true; document.getElementById('btnO').classList.add('disabled'); document.getElementById('btnX').classList.add('disabled');
-}
-
-function next(){ idx=(idx+1)%quiz.length; render(); }
-
-// wire
-document.getElementById('btnO').onclick=()=>answer(true);
-document.getElementById('btnX').onclick=()=>answer(false);
-
-// version
-function versionText(){
-  return "조문 기준: 2025-07-22 시행 반영 | 빌드: FINAL | 모드:"+MODE+" | 난이도:"+DIFF + (lastSync? " | 동기화: "+lastSync.replace('T',' ').slice(0,19):"");
-}
-document.getElementById('versionBox').textContent = versionText();
-
-// service worker
-if('serviceWorker' in navigator){ window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js')); }
-
-// boot
-(async function(){
-  try{ await syncRemote(); }catch{}
-  if (AUTO_GEN) pickNewSet(true); else pickNewSet(false);
-})();
-</script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
