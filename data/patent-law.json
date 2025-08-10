@@ -1,0 +1,330 @@
+{
+  "version": "midpack-0.3",
+  "generated_at": "2025-08-10T15:22:04.620025Z",
+  "notes": [
+    "중간본: 본법 중심 20문항 내외, 시행령/시규 일부 포함",
+    "최종본에서는 조문별 3~4문항 이상으로 확대"
+  ],
+  "questions": [
+    {
+      "id": "pat-029-03-T1",
+      "article_no": "제29조",
+      "article_title": "특허요건",
+      "clause": "제3항",
+      "presented": "특허출원한 발명이 다음 각 호의 요건을 모두 갖춘 다른 특허출원의 출원서에 최초로 첨부된 명세서 또는 도면에 기재된 발명과 동일한 경우에는 언제나 특허를 받을 수 없다.\n1. 그 특허출원일 전에 출원된 특허출원일 것\n2. 그 특허출원 후 제64조에 따라 출원공개되거나 제87조제3항에 따라 등록공고된 특허출원일 것",
+      "answer": "X",
+      "trap_notes": [
+        "단서(발명자·출원인 동일 예외) 삭제 + '언제나' 절대어"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제29조 제3항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-029-01-T2",
+      "article_no": "제29조",
+      "article_title": "특허요건",
+      "clause": "제1항",
+      "presented": "산업상 이용할 수 없는 발명은 특허를 받을 수 있다.",
+      "answer": "X",
+      "trap_notes": [
+        "부정긍정 전환(받을 수 없다 → 있다)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제29조 제1항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-042-03-T1",
+      "article_no": "제42조",
+      "article_title": "명세서 및 도면",
+      "clause": "제3항",
+      "presented": "명세서 또는 도면의 보정은 특허출원서에 최초로 첨부한 명세서 또는 도면에 기재된 사항의 범위를 벗어나서 할 수 있다.",
+      "answer": "X",
+      "trap_notes": [
+        "범위 일탈 허용처럼 변경"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제42조 제3항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-036-01-T1",
+      "article_no": "제36조",
+      "article_title": "명세서 또는 도면의 보정",
+      "clause": "제1항",
+      "presented": "외국어특허출원에 대한 보정은 최종 국어번역문 또는 최초 도면(도면 중 설명부분 제외)에 기재된 사항의 범위에서도 하여야 한다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제36조 제1항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-047-00-T1",
+      "article_no": "제47조",
+      "article_title": "심사청구기간",
+      "clause": "",
+      "presented": "특허출원에 대한 심사청구는 출원일부터 3년 이내에 하여야 하며, 이 기간은 연장할 수 없다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제47조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-054-01-T1",
+      "article_no": "제54조",
+      "article_title": "출원공개",
+      "clause": "제1항",
+      "presented": "특허청장은 출원일로부터 1년이 지난 특허출원에 대하여 출원공개결정을 하여야 한다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제54조 제1항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-087-00-T1",
+      "article_no": "제87조",
+      "article_title": "등록공고",
+      "clause": "",
+      "presented": "특허청장은 거절이유가 없다고 판단된 특허출원에 대하여 언제나 등록공고를 하여야 한다.",
+      "answer": "X",
+      "trap_notes": [
+        "'언제나' 추가로 예외 삭제"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제87조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-052-01-T1",
+      "article_no": "제52조",
+      "article_title": "분할출원",
+      "clause": "제1항",
+      "presented": "분할출원은 1) 보정기간, 2) 거절결정등본 송달일부터 3개월, 3) 거절결정불복심판 기각심결등본 송달일부터 3개월 이내에 할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제52조 제1항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-051-00-T1",
+      "article_no": "제51조",
+      "article_title": "변경출원",
+      "clause": "",
+      "presented": "변경출원은 언제나 원출원과 서로 다른 발명으로 변경할 수 있다.",
+      "answer": "X",
+      "trap_notes": [
+        "'언제나' + 다른 발명으로 변경 가능처럼 왜곡"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제51조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-055-00-T1",
+      "article_no": "제55조",
+      "article_title": "국내우선권주장",
+      "clause": "",
+      "presented": "국내우선권주장은 최초 출원일부터 12개월 이내에 후출원을 하여야 한다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제55조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-054-00-T2",
+      "article_no": "제54조",
+      "article_title": "조약우선권주장",
+      "clause": "",
+      "presented": "조약우선권주장은 최초 출원일부터 1년 이내에 하여야 한다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제54조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-099-03-T1",
+      "article_no": "제99조",
+      "article_title": "특허권의 이전 및 공유 등",
+      "clause": "제3항",
+      "presented": "특허권이 공유인 경우 각 공유자는 계약으로 특별히 약정한 경우를 제외하고는 다른 공유자의 동의 없이 그 특허발명을 자신이 실시할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제99조 제3항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-099-02-T1",
+      "article_no": "제99조",
+      "article_title": "특허권의 이전 및 공유 등",
+      "clause": "제2항",
+      "presented": "특허권이 공유인 경우 각 공유자는 다른 공유자 일부의 동의만으로 그 지분을 양도할 수 있다.",
+      "answer": "X",
+      "trap_notes": [
+        "'모두의 동의' → '일부의 동의'로 축소"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제99조 제2항",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-101-00-T1",
+      "article_no": "제101조",
+      "article_title": "통상실시권",
+      "clause": "",
+      "presented": "통상실시권은 계약으로 정한 바에 따라 이전할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제101조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-134-00-T1",
+      "article_no": "제134조",
+      "article_title": "무효심판",
+      "clause": "",
+      "presented": "특허가 무효로 되어야 할 사유가 있는 경우에는 누구든지 무효심판을 청구할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제134조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-164-00-T1",
+      "article_no": "제164조",
+      "article_title": "심결취소소송",
+      "clause": "",
+      "presented": "심결취소소송은 심결등본을 송달받은 날부터 30일 이내에 제기하여야 한다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제164조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-164-00-T2",
+      "article_no": "제164조",
+      "article_title": "심결취소소송",
+      "clause": "",
+      "presented": "심결취소소송은 심결등본을 송달받은 날부터 언제나 제기할 수 있다.",
+      "answer": "X",
+      "trap_notes": [
+        "'언제나' 절대어 삽입으로 기간 삭제"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제164조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "pat-016-00-T1",
+      "article_no": "제16조",
+      "article_title": "기간의 연장 또는 단축",
+      "clause": "",
+      "presented": "특허청장 또는 심판장은 청구에 의하여 지정기간을 연장하거나 단축할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지). (심판장 직함 허용 범위)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법",
+        "article": "제16조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "enf-007-00-T1",
+      "article_no": "시행령 제7조",
+      "article_title": "기간의 연장 및 단축",
+      "clause": "",
+      "presented": "기간의 연장과 단축은 청구 또는 직권으로 할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법 시행령",
+        "article": "제7조",
+        "source": "Casenote"
+      }
+    },
+    {
+      "id": "rule-027-00-T1",
+      "article_no": "시행규칙 제27조",
+      "article_title": "서류의 제출방식",
+      "clause": "",
+      "presented": "특허청에 제출하는 서류는 전자문서로 제출할 수 있다.",
+      "answer": "O",
+      "trap_notes": [
+        "정답 지문(원문 유지)"
+      ],
+      "explain_popup_ref": {
+        "law": "특허법 시행규칙",
+        "article": "제27조",
+        "source": "Casenote"
+      }
+    }
+  ]
+}
