@@ -3,99 +3,198 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>특허법 OX — PWA URL 로더 + 강제 새로고침</title>
+<title>특허법 OX — 프리티+피드백+복사</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="특허법 OX">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#f7f9fc">
+
 <style>
-  :root { --gap: 12px; --radius: 12px; }
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica Neue', Arial, sans-serif;
-         margin: 0; background: #f6f7f9; color: #111; }
-  header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; gap: 8px; align-items: center; z-index: 10;
-           box-shadow: 0 2px 12px rgba(0,0,0,.04); flex-wrap: wrap;}
-  header strong { white-space: nowrap; }
-  header input[type="text"]{ flex: 1; min-width: 180px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; }
-  header button { padding: 10px 12px; border: 1px solid #dbe1ea; background: #fff; border-radius: 10px; cursor: pointer; }
-  header button:hover { background: #f1f5f9; }
-  header button:active { transform: translateY(1px); }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px; }
-  .quizbar { position: sticky; top: 58px; z-index: 9; background: linear-gradient(180deg,#ffffff 0%,#f9fbff 100%); border-bottom: 1px solid #e8eef7; padding: 10px 16px; display:none; }
-  .quizbar .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .pill { padding:4px 10px; border:1px solid #e2e8f0; border-radius:999px; background:#fff; font-size:12px; color:#334155; }
-  .progress { height:8px; background:#eef2f7; border-radius:999px; overflow:hidden; }
-  .progress > span { display:block; height:100%; width:0%; background:#7c9cff; transition:width .25s ease; }
-  .card { position: relative; background: #fff; border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 16px; margin-bottom: var(--gap); box-shadow: 0 1px 0 rgba(16,24,40,0.04);
-          transition: box-shadow .2s; }
-  .card:hover { box-shadow: 0 4px 20px rgba(16,24,40,.06); }
-  .card.review { outline: 2px dashed #f59e0b; }
-  .meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; color: #475569; }
-  .badge { padding: 2px 8px; border-radius: 999px; background:#f8fafc; border:1px solid #e6ebf2; }
-  .badge.trap { background:#eef4ff; border-color:#dbe7ff; }
-  .editpin { position: absolute; right: 12px; top: 12px; font-size: 12px; opacity: .9; }
-  .editpin button { padding: 6px 8px; border: 1px solid #e5e7eb; background: #fff; border-radius: 999px; cursor: pointer; }
-  .question { font-size: 16px; line-height: 1.6; margin-bottom: 12px; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .actions button { padding: 8px 10px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; }
-  .actions button.active { background:#e8fff1; border-color:#a7f3d0; }
-  details { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; }
-  summary { cursor: pointer; user-select: none; }
-  .editor { margin-top: 12px; border-top: 1px dashed #e5e7eb; padding-top: 12px; display: none; }
-  .editor label { display: block; font-size: 12px; color: #475569; margin-top: 8px; }
-  .editor input[type="text"], .editor textarea { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
-  .muted { color: #64748b; font-size: 12px; }
-  .small { font-size: 12px; }
-  .footer { text-align: center; color: #64748b; font-size: 12px; padding: 24px 12px; }
-  .editmode-on { background: #eefbf1; border-color: #bbf7d0; }
-  .hl { margin-top: 8px; padding: 8px; background: #fff; border: 1px dashed #e5e7eb; border-radius: 8px; }
-  .hl .title { font-weight: 600; font-size: 12px; color: #334155; margin-bottom: 4px; }
-  .tok-ins { text-decoration: underline; text-decoration-style: solid; }
-  .tok-del { text-decoration: line-through; opacity: .6; }
-  .tok-chg { background: #fff3cd; }
-  .empty { background: #fff; border: 1px dashed #e5e7eb; padding: 14px; border-radius: 10px; color: #475569; }
+  :root{
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e6eaf2;
+    --accent: #4f46e5;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.08);
+    --shadow-soft: 0 1px 2px rgba(16,24,40,.04), 0 6px 16px rgba(16,24,40,.06);
+    --btn-shadow: 0 1px 1px rgba(0,0,0,.04);
+    --ok: linear-gradient(180deg,#34d399,#10b981);
+    --bad: linear-gradient(180deg,#fda4af,#ef4444);
+  }
+  *{ box-sizing: border-box; }
+  html, body{ height:100%; }
+  body{
+    margin:0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR',
+                 'Apple SD Gothic Neo','Malgun Gothic','Helvetica Neue', Arial, sans-serif;
+  }
+
+  header{
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(180deg, #ffffff, #f8faff);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    box-shadow: 0 6px 24px rgba(16,24,40,.06);
+  }
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; max-width: 1200px; margin: 0 auto; }
+  .brand{ display:flex; align-items:center; gap:10px; padding: 6px 8px; border-radius: 12px;
+          background:#ffffff; border:1px solid var(--border); box-shadow: var(--btn-shadow); user-select:none; }
+  .brand .logo{ width:22px; height:22px; display:grid; place-items:center; border-radius:6px;
+    background: conic-gradient(from 180deg at 50% 50%, #8da2fb, #4f46e5 65%, #2dd4bf);
+    color:white; font-weight:800; font-size:14px; }
+  .brand .name{ font-weight:700; letter-spacing:.2px; }
+  .ctrl{ display:flex; gap:8px; align-items:center; flex:1; min-width:260px; }
+  .search{ flex:1; display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--border); border-radius: 12px; padding: 8px 10px; box-shadow: var(--btn-shadow); }
+  .search input{ border:none; outline:none; width:100%; font-size:14px; }
+  .buttons{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn{
+    appearance:none; border:none; outline:none;
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 10px 12px; border-radius: 12px; cursor:pointer;
+    background:#fff; border:1px solid var(--border); color:#111;
+    box-shadow: var(--btn-shadow); font-weight:600; font-size:13px;
+    transition: transform .05s ease, background .15s ease, box-shadow .2s ease, filter .15s ease;
+    user-select:none;
+  }
+  .btn:hover{ background:#f8fafc; }
+  .btn:active{ transform: translateY(1px); }
+  .btn .ico{ font-size:16px; }
+  .btn.primary{ background: linear-gradient(180deg,#6366f1,#4f46e5); color:#fff; border-color:#4f46e5; }
+  .btn.success{ background: var(--ok); color:#fff; border-color:#10b981; }
+  .btn.warn{ background: linear-gradient(180deg,#fbbf24,#f59e0b); color:#fff; border-color:#f59e0b;}
+  .btn.ghost{ background:#fff; }
+  .btn.pill{ border-radius:999px; }
+  .btn.icon{ padding: 10px; width:42px; justify-content:center; }
+
+  .quizbar{ position: sticky; top: 72px; z-index: 10; display:none;
+    padding: 8px 12px; background: #ffffffd9; backdrop-filter: blur(6px); border-bottom:1px solid var(--border);
+  }
+  .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+         background:#fff; border:1px solid var(--border); color:#334155; font-size:12px; }
+  .progress{ height:10px; background:#eef2f7; border-radius:999px; overflow:hidden; flex:1; min-width:160px; }
+  .progress > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg,#60a5fa,#8b5cf6); transition: width .25s ease; }
+
+  .wrap{ max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .tips{ margin: 10px 0 16px; color: var(--muted); font-size: 12px; }
+  .card{ background: var(--card); border:1px solid var(--border); border-radius: var(--radius);
+         box-shadow: var(--shadow-soft); padding: 16px; margin-bottom: 14px; position: relative; transition: box-shadow .2s, border-color .2s; }
+  .card:hover{ box-shadow: var(--shadow); }
+  .card.review{ outline: 2px dashed var(--warning); outline-offset: 2px; }
+  .meta{ display:flex; gap:8px; align-items:center; margin-bottom:6px; font-size: 12px; color:var(--muted); flex-wrap:wrap;}
+  .badge{ padding: 4px 8px; border-radius: 999px; background:#f8fafc; border:1px solid var(--border); }
+  .editpin{ position:absolute; right:12px; top:12px; }
+  .editpin .btn{ padding:6px 8px; font-size:12px; }
+  .question{ font-size: 16px; line-height: 1.7; margin-bottom: 12px; }
+  .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 10px; }
+  .actions .btn{ padding:8px 10px; font-size:13px; }
+  .actions .btn.active{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .actions .btn.wrong{ background:#fff1f2; border-color:#fecdd3; color:#9f1239; }
+  .result{ font-size:13px; font-weight:700; }
+  .result.ok{ color:#059669; }
+  .result.bad{ color:#b91c1c; }
+  details{ background:#fbfcff; border:1px dashed var(--border); border-radius: 12px; padding: 8px 10px; }
+  summary{ cursor:pointer; user-select:none; font-weight:600; }
+  .editor{ display:none; margin-top:12px; border-top:1px dashed var(--border); padding-top:10px; }
+  .editor label{ display:block; font-size: 12px; color: var(--muted); margin-top:8px; }
+  .editor input, .editor textarea{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius: 10px; font-size: 14px; background:#fff; }
+  .hl{ margin-top:8px; padding: 8px; background:#fff; border:1px dashed var(--border); border-radius: 12px; }
+  .hl .title{ font-weight:700; font-size:12px; color:#334155; margin-bottom:4px; }
+  .tok-ins{ text-decoration: underline; text-underline-offset:3px; }
+  .tok-del{ text-decoration: line-through; opacity:.6; }
+  .tok-chg{ background:#fff3cd; }
+  .empty{ background:#fff; border: 2px dashed var(--border); padding: 18px; border-radius: 14px; color:#475569; text-align:center; }
+
+  .fab{ position: fixed; right: 16px; bottom: 16px; z-index: 30; display:flex; gap:10px; flex-direction:column; }
+  .fab .btn{ border-radius: 14px; box-shadow: var(--shadow); }
+  @media (min-width: 860px){ .fab{ display:none; } }
+
+  /* Modal */
+  .modal{ position: fixed; inset:0; background: rgba(2,6,23,.6); display:none; align-items:center; justify-content:center; z-index:100; }
+  .modal .panel{ width:min(900px, 94%); max-height: 80vh; overflow:auto; background:#fff; border-radius:16px; border:1px solid var(--border); box-shadow: var(--shadow); }
+  .modal header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--border); padding:10px 12px; box-shadow:none; }
+  .modal .body{ padding: 12px; }
+  .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; white-space: pre-wrap; font-size: 13px; line-height: 1.6; }
 </style>
 </head>
 <body>
 <header>
-  <strong>특허법 OX — PWA URL 로더</strong>
-  <input id="search" type="text" placeholder="검색: 조문/문제/해설/트랩유형" />
-  <button id="btnToggleEdit">편집 모드: <span id="editState">OFF</span></button>
-  <button id="btnAdd">+ 새 문제</button>
-  <button id="btnExportJson">JSON 내보내기</button>
-  <button id="btnExportCsv">CSV 내보내기</button>
-  <button id="btnImport">JSON 가져오기(파일)</button>
-  <button id="btnImportUrl">URL에서 불러오기</button>
-  <button id="btnShuffle">셔플</button>
-  <button id="btnQuiz">랜덤 풀이</button>
-  <button id="btnQuizExit" style="display:none">퀴즈 종료</button>
-  <button id="btnReset">초기화</button>
-  <button id="btnHardRefresh" title="서비스워커/캐시 삭제 후 강제 새로고침">강제 새로고침</button>
+  <div class="row">
+    <div class="brand">
+      <div class="logo">P</div>
+      <div class="name">특허법 OX</div>
+    </div>
+
+    <div class="ctrl">
+      <div class="search">
+        <span class="ico">🔎</span>
+        <input id="search" type="text" placeholder="검색: 조문/문제/해설" />
+      </div>
+      <button id="btnToggleEdit" class="btn pill"><span class="ico">✍️</span>편집 <b id="editState">OFF</b></button>
+      <button id="btnAdd" class="btn pill"><span class="ico">➕</span>새 문제</button>
+    </div>
+
+    <div class="buttons">
+      <button id="btnImport" class="btn"><span class="ico">📂</span>JSON(파일)</button>
+      <button id="btnImportUrl" class="btn"><span class="ico">🌐</span>URL 불러오기</button>
+      <button id="btnExportJson" class="btn"><span class="ico">💾</span>JSON 내보내기</button>
+      <button id="btnExportCsv" class="btn"><span class="ico">📑</span>CSV 내보내기</button>
+      <button id="btnShuffle" class="btn"><span class="ico">🔀</span>셔플</button>
+      <button id="btnQuiz" class="btn success"><span class="ico">🧩</span>랜덤 풀이</button>
+      <button id="btnQuizExit" class="btn warn" style="display:none"><span class="ico">🚪</span>퀴즈 종료</button>
+      <button id="btnReset" class="btn"><span class="ico">🧹</span>초기화</button>
+      <button id="btnHardRefresh" class="btn primary"><span class="ico">♻️</span>강제 새로고침</button>
+    </div>
+  </div>
 </header>
 
 <div id="quizBar" class="quizbar">
   <div class="row">
-    <span class="pill">퀴즈 모드</span>
+    <span class="pill">🧩 퀴즈 모드</span>
     <span class="pill">진행: <b id="qbProgressText">0/0</b></span>
     <span class="pill">정답: <b id="qbCorrectText">0</b></span>
-    <div class="progress" style="flex:1; min-width:160px;">
-      <span id="qbProgressFill"></span>
-    </div>
+    <div class="progress"><span id="qbProgressFill"></span></div>
   </div>
 </div>
 
 <div class="wrap">
-  <div class="toolbar small">
-    • 카드 포커스 단축키: <b>O</b>=O, <b>X</b>=X, <b>E</b>=편집, <b>S</b>=저장, <b>M</b>=검토표시<br/>
-    • <b>편집 모드</b> ON → 카드 탭/클릭 시 해당 문항 편집기 즉시 오픈. 우상단 <b>✎ 편집</b>으로도 바로 진입.<br/>
-    • <b>하이라이트</b>는 “해설(원문)”과 “문제문”을 단어 단위로 비교해 변경 지점을 표시합니다.
+  <div class="tips">
+    • 단축키: <b>O</b>=O, <b>X</b>=X, <b>E</b>=편집, <b>S</b>=저장, <b>M</b>=검토표시<br/>
+    • 편집모드 ON이면 카드 탭/클릭 시 편집기 즉시 오픈. 우상단 <b>✎ 편집</b>으로도 가능.<br/>
+    • 하이라이트는 “해설(원문)” vs “문제문”을 단어 단위 비교로 표시.
   </div>
   <div id="list"></div>
   <div id="empty" class="empty" style="display:none">아직 문항이 없습니다. JSON(파일/URL)로 가져오거나 “+ 새 문제”를 눌러 추가하세요.</div>
-  <div class="footer">로컬 저장(localStorage). JSON/CSV로 백업하세요.</div>
+  <div class="tips" style="text-align:center">로컬 저장(localStorage). JSON/CSV로 백업 권장.</div>
+</div>
+
+<div class="fab">
+  <button id="fabQuiz" class="btn success"><span class="ico">🧩</span>풀기</button>
+  <button id="fabAdd" class="btn"><span class="ico">➕</span>추가</button>
+  <button id="fabImportUrl" class="btn"><span class="ico">🌐</span>URL</button>
+</div>
+
+<!-- Modal for full statute copy -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="panel">
+    <header class="row">
+      <div style="font-weight:700">전체 조문 보기/복사</div>
+      <div style="flex:1"></div>
+      <button id="btnCopyModal" class="btn success"><span class="ico">📋</span>복사</button>
+      <button id="btnCloseModal" class="btn"><span class="ico">✖️</span>닫기</button>
+    </header>
+    <div class="body">
+      <div id="modalText" class="mono"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -132,23 +231,19 @@ async function importFromUrl(url, silent=false){
     save(items);
     localStorage.setItem(LAST_URL_KEY, url);
     render();
-    if (!silent) alert(`URL에서 불러오기 완료: ${items.length}문항`);
+    if (!silent) toast(`URL 불러오기 완료: <b>${items.length}</b>문항`, "ok");
   } catch(e){
-    if (!silent) alert("URL 로드 실패: " + e.message);
+    if (!silent) toast("URL 로드 실패: " + e.message, "bad");
   }
 }
 
-// 강제 새로고침: SW + caches 제거 후 reload
 async function hardRefresh(){
-  const ok = confirm("서비스워커/캐시를 삭제하고 새로고침할까요? (문제 데이터는 유지됩니다)");
-  if (!ok) return;
+  if (!confirm("서비스워커/캐시를 삭제하고 새로고침할까요? (문제 데이터는 유지됩니다)")) return;
   try{
-    // delete caches
     if (window.caches && caches.keys){
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
     }
-    // unregister all SW
     if ('serviceWorker' in navigator){
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
@@ -156,9 +251,35 @@ async function hardRefresh(){
   } catch(e){
     console.warn("hardRefresh error:", e);
   } finally {
-    // small delay then reload
-    setTimeout(()=>location.reload(), 200);
+    setTimeout(()=>location.reload(), 250);
   }
+}
+
+function toast(msg, kind="info"){
+  let el = document.getElementById("toast");
+  if (!el){
+    el = document.createElement("div");
+    el.id = "toast";
+    el.style.position = "fixed";
+    el.style.left = "50%";
+    el.style.bottom = "20px";
+    el.style.transform = "translateX(-50%)";
+    el.style.padding = "12px 16px";
+    el.style.borderRadius = "12px";
+    el.style.border = "1px solid var(--border)";
+    el.style.background = "#ffffff";
+    el.style.boxShadow = "0 8px 24px rgba(0,0,0,.12)";
+    el.style.zIndex = "50";
+    el.style.fontSize = "13px";
+    document.body.appendChild(el);
+  }
+  el.innerHTML = msg;
+  el.style.display = "block";
+  el.style.opacity = "0";
+  el.style.transition = "opacity .15s ease";
+  requestAnimationFrame(()=>{ el.style.opacity = "1"; });
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.style.opacity="0"; setTimeout(()=>el.style.display="none", 150); }, 1600);
 }
 
 // Hash deep link
@@ -182,7 +303,7 @@ function h(tag, attrs={}, ...children){
   return el;
 }
 
-// Diff helpers
+// Diff
 function diffTokens(a, b){
   const wa = (a||"").split(/(\s+)/), wb = (b||"").split(/(\s+)/);
   const n = wa.length, m = wb.length;
@@ -220,7 +341,7 @@ function renderDiff(aRaw, qRaw){
       right.push("<span class='tok-ins tok-chg'>"+escapeHtml(op.b)+"</span>");
     }
   }
-  return "<div class='hl'><div class='title'>원문 대비 문제문 차이</div><div><div class='small muted'>왼쪽=원문, 오른쪽=문제문</div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px'><div>"+left.join("")+"</div><div>"+right.join("")+"</div></div></div>";
+  return "<div class='hl'><div class='title'>원문 대비 문제문 차이</div><div><div class='small' style='color:var(--muted)'>왼쪽=원문, 오른쪽=문제문</div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px'><div>"+left.join("")+"</div><div>"+right.join("")+"</div></div></div>";
 }
 
 // QUIZ & Shuffle
@@ -245,7 +366,7 @@ function shuffleItems() {
   save(items); render();
 }
 function startQuiz(){
-  if (!items.length){ alert("문항이 없습니다. 먼저 문제를 추가/가져오거나 URL에서 불러오세요."); return; }
+  if (!items.length){ toast("문항이 없습니다. 먼저 JSON을 불러오세요.", "bad"); return; }
   const n = parseInt(prompt(`몇 개를 랜덤으로 풀까요? (1 ~ ${items.length})`, Math.min(20, items.length)), 10);
   if (!n || isNaN(n)) return;
   quiz.pool = sampleN(items, n);
@@ -278,6 +399,33 @@ function updateQuizBar(){
   if (elF) elF.style.width = pct + "%";
 }
 
+// Modal helpers
+function openModal(text){
+  const el = document.getElementById("modal");
+  const box = document.getElementById("modalText");
+  box.textContent = text || "";
+  el.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeModal(){
+  const el = document.getElementById("modal");
+  el.style.display = "none";
+  document.body.style.overflow = "";
+}
+document.getElementById("btnCloseModal").addEventListener("click", closeModal);
+document.getElementById("modal").addEventListener("click", (e)=>{
+  if (e.target.id === "modal") closeModal();
+});
+document.getElementById("btnCopyModal").addEventListener("click", async ()=>{
+  const text = document.getElementById("modalText").textContent || "";
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("복사 완료", "ok");
+  }catch(e){
+    toast("복사 실패: 권한을 확인하세요.", "bad");
+  }
+});
+
 function render(){
   document.getElementById("editState").textContent = settings.editMode ? "ON" : "OFF";
   const q = document.getElementById("search").value.trim().toLowerCase();
@@ -289,47 +437,54 @@ function render(){
   let count = 0;
 
   source.forEach((it)=>{
-    if (q && !((it.articleLabel||'') + ' ' + (it.questionText||'') + ' ' + (it.explanation||'') + ' ' + (it.trapTypes||'') + ' ' + (it.compareNote||'')).toLowerCase().includes(q)) return;
+    if (q && !((it.articleLabel||'') + ' ' + (it.questionText||'') + ' ' + (it.explanation||'') + ' ' + (it.compareNote||'')).toLowerCase().includes(q)) return;
     count++;
     const card = h("div", {class:"card", tabindex:"0", id: it.id});
     if (it.markReview) card.classList.add("review");
-    if (settings.editMode) card.classList.add("editmode-on");
+
     if (settings.editMode){
       card.addEventListener("click", (ev)=>{
         if ((ev.target.tagName === "BUTTON" || ev.target.closest(".editor") || ev.target.closest("details"))) return;
         openEditorFor(it.id);
       });
     }
+
+    // 상단 메타: (트랩 유형은 숨김)
     const meta = h("div",{class:"meta"},
       h("span",{class:"badge"}, it.articleLabel || "—"),
-      h("span",{class:"badge trap"}, it.trapTypes || "트랩미지정"),
-      h("span",{class:"muted"}, `ID: ${it.id}`),
+      h("span",{style:"color:var(--muted)"}, `ID: ${it.id}`),
     );
     const pin = h("div",{class:"editpin"},
-      h("button",{onclick:(e)=>{ e.stopPropagation(); quickEdit(it.id); }}, "✎ 편집")
+      h("button",{class:"btn", onclick:(e)=>{ e.stopPropagation(); quickEdit(it.id); }}, "✎ 편집")
     );
     const question = h("div",{class:"question"}, it.questionText || "");
     const actions = h("div",{class:"actions"});
-    const btnO = h("button", {onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"O"); }}, "O");
-    const btnX = h("button", {onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"X"); }}, "X");
-    if (it.answerUser==="O") btnO.classList.add("active"); else if (it.answerUser==="X") btnX.classList.add("active");
-    const btnEdit = h("button", {onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,true); settings.currentEditId = it.id; saveSettings(settings); }}, "수정");
-    const btnMark = h("button", {onclick:(e)=>{ e.stopPropagation(); it.markReview=!it.markReview; save(items); render(); }}, it.markReview?"검토 해제":"검토 표시");
-    const btnHL = h("button", {onclick:(e)=>{ e.stopPropagation(); showHighlight(card, it); }}, "하이라이트");
-    const btnDelete = h("button", {onclick:(e)=>{ e.stopPropagation(); if(confirm('이 문제를 삭제할까요?')){ const idxAll = items.findIndex(x=>x.id===it.id); if (idxAll>=0) items.splice(idxAll,1); save(items); render(); } }}, "삭제");
-    actions.append(btnO, btnX, btnEdit, btnMark, btnHL, btnDelete);
+    const btnO = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"O", card, btnO, btnX); }}, "O");
+    const btnX = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"X", card, btnO, btnX); }}, "X");
+    const result = h("div",{class:"result", id:"res-"+it.id});
+    const btnEdit = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,true); settings.currentEditId = it.id; saveSettings(settings); }}, "수정");
+    const btnMark = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); it.markReview=!it.markReview; save(items); render(); }}, it.markReview?"검토 해제":"검토 표시");
+    const btnHL = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); showHighlight(card, it); }}, "하이라이트");
+    const btnDelete = h("button", {class:"btn", onclick:(e)=>{ e.stopPropagation(); if(confirm('이 문제를 삭제할까요?')){ const idxAll = items.findIndex(x=>x.id===it.id); if (idxAll>=0) items.splice(idxAll,1); save(items); render(); } }}, "삭제");
+    actions.append(btnO, btnX, result, btnEdit, btnMark, btnHL, btnDelete);
 
+    // 해설/조문 보기: 복사/전체화면 버튼 포함
     const det = h("details",{},
-      h("summary",{}, "해설/비교 보기"),
-      h("div", {class:"small", style:"margin-top:8px"}, 
+      h("summary",{}, "해설/조문 보기"),
+      h("div", {class:"small", style:"margin-top:8px"},
         h("div",{}, "해설(원문/전문 또는 요지):"),
         h("div",{}, it.explanation || ""),
+        h("div",{style:"display:flex; gap:8px; margin:8px 0; flex-wrap:wrap"},
+          h("button",{class:"btn", onclick:(e)=>{ e.stopPropagation(); copyText(it.explanation || ""); }}, "복사"),
+          h("button",{class:"btn", onclick:(e)=>{ e.stopPropagation(); openModal(it.explanation || ""); }}, "전체 화면")
+        ),
         h("div",{style:"margin-top:8px"}, "비교조문/메모: " + (it.compareNote || "—"))
       )
     );
     const hlBox = h("div", {id: "hl-"+it.id, style:"margin-top:8px"});
 
     const editor = h("div",{class:"editor"});
+    if (settings.editMode){ card.classList.add("editmode-on"); }
     editor.append(
       labelInput("조문 표기", it, "articleLabel"),
       labelTextarea("문제 문장", it, "questionText"),
@@ -338,8 +493,8 @@ function render(){
       labelInput("비교조문/메모", it, "compareNote"),
       labelInput("트랩 유형(쉼표 구분)", it, "trapTypes"),
       h("div",{class:"actions"},
-        h("button",{onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); save(items); render(); }}, "저장"),
-        h("button",{onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); render(); }}, "취소")
+        h("button",{class:"btn success", onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); save(items); render(); }}, "저장"),
+        h("button",{class:"btn", onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); render(); }}, "취소")
       )
     );
 
@@ -347,8 +502,8 @@ function render(){
     root.appendChild(card);
 
     card.addEventListener("keydown",(ev)=>{
-      if (ev.key==="o" || ev.key==="O") { selectAnswer(it,"O"); ev.preventDefault(); }
-      if (ev.key==="x" || ev.key==="X") { selectAnswer(it,"X"); ev.preventDefault(); }
+      if (ev.key==="o" || ev.key==="O") { selectAnswer(it,"O", card, btnO, btnX); ev.preventDefault(); }
+      if (ev.key==="x" || ev.key==="X") { selectAnswer(it,"X", card, btnO, btnX); ev.preventDefault(); }
       if (ev.key==="e" || ev.key==="E") { openEditorFor(it.id); ev.preventDefault(); }
       if (ev.key==="s" || ev.key==="S") {
         const ed = card.querySelector(".editor");
@@ -356,9 +511,20 @@ function render(){
       }
       if (ev.key==="m" || ev.key==="M") { it.markReview=!it.markReview; save(items); render(); ev.preventDefault(); }
     });
+    const cur = settings.currentEditId && settings.currentEditId===it.id;
+    if (settings.editMode && cur){ toggleEditor(card, true, true); }
   });
 
   empty.style.display = count ? "none" : "block";
+}
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(String(text||""));
+    toast("복사 완료", "ok");
+  }catch(e){
+    toast("복사 실패: 권한을 확인하세요.", "bad");
+  }
 }
 
 function showHighlight(card, it){
@@ -385,63 +551,75 @@ function labelTextarea(title, it, key){
   return wrap;
 }
 
-function selectAnswer(it, val){
+// Answer feedback
+function selectAnswer(it, val, card, btnO, btnX){
   it.answerUser = val;
+  const correct = (val === it.answer);
+  const res = document.getElementById("res-"+it.id);
+  [btnO, btnX].forEach(b=>{ b.classList.remove("active","wrong"); });
+  if (correct){
+    res.className = "result ok";
+    res.textContent = "정답!";
+    (val==="O"?btnO:btnX).classList.add("active");
+    pulse(card, "ok");
+    toast("정답!", "ok");
+  } else {
+    res.className = "result bad";
+    res.textContent = `오답. 정답은 ${it.answer}`;
+    (val==="O"?btnO:btnX).classList.add("wrong");
+    (it.answer==="O"?btnO:btnX).classList.add("active");
+    pulse(card, "bad");
+    toast(`오답! 정답은 ${it.answer}`, "bad");
+  }
+
   if (quiz.active && quiz.pool.includes(it)){
     const wasDone = !!it._done;
     if (!wasDone){
       quiz.answered += 1;
       it._done = true;
-      if (val === it.answer) quiz.correct += 1;
+      if (correct) quiz.correct += 1;
       updateQuizBar();
     }
   }
   save(items);
-  render();
+  render(); // re-render to keep state synced (buttons will preserve styles via answerUser + last feedback)
 }
 
-function toggleEditor(card, on, focusFirst=false){
-  const ed = card.querySelector(".editor");
-  if (on){
-    document.querySelectorAll(".editor").forEach(el=> el.style.display = "none");
+function pulse(card, kind){
+  card.style.transition = "box-shadow .2s, border-color .2s, background .2s";
+  if (kind==="ok"){
+    card.style.boxShadow = "0 0 0 2px rgba(16,185,129,.25), var(--shadow)";
+    card.style.borderColor = "#bbf7d0";
+    card.style.background = "#f0fdf4";
+  }else{
+    card.style.boxShadow = "0 0 0 2px rgba(239,68,68,.15), var(--shadow)";
+    card.style.borderColor = "#fecaca";
+    card.style.background = "#fef2f2";
   }
-  ed.style.display = on ? "block" : "none";
-  if (on && focusFirst){
-    const first = ed.querySelector("input,textarea");
-    if (first) first.focus({preventScroll:true});
-    card.scrollIntoView({behavior:"smooth", block:"center"});
-  }
-}
-function quickEdit(id){
-  settings.editMode = true;
-  settings.currentEditId = id;
-  saveSettings(settings);
-  location.hash = "edit=" + id;
-  render();
-}
-function openEditorFor(id){
-  settings.currentEditId = id;
-  saveSettings(settings);
-  location.hash = "edit=" + id;
-  const target = document.getElementById(id);
-  if (target) toggleEditor(target, true, true);
+  setTimeout(()=>{
+    card.style.boxShadow = "";
+    card.style.borderColor = "";
+    card.style.background = "";
+  }, 600);
 }
 
-document.getElementById("btnAdd").addEventListener("click", ()=>{
+// Toolbar
+const $ = s => document.querySelector(s);
+$("#btnAdd").addEventListener("click", ()=>{
   const it = { id: uid(), articleLabel:"", questionText:"(O/X)", answer:"", explanation:"", compareNote:"", trapTypes:"", markReview:false };
   items.unshift(it);
   save(items); render();
   settings.editMode = true; settings.currentEditId = it.id; saveSettings(settings);
   location.hash = "edit=" + it.id;
 });
-document.getElementById("btnExportJson").addEventListener("click", ()=>{
+$("#btnExportJson").addEventListener("click", ()=>{
   const blob = new Blob([JSON.stringify(items, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "patent_ox_items.json";
   a.click();
 });
-document.getElementById("btnExportCsv").addEventListener("click", ()=>{
+$("#btnExportCsv").addEventListener("click", ()=>{
   const cols = ["id","articleLabel","questionText","answer","explanation","compareNote","trapTypes","markReview"];
   const esc = s => ('"' + String(s).replace(/"/g,'""') + '"');
   const rows = [cols.join(",")].concat(items.map(it=>cols.map(c=>esc(it[c] ?? "")).join(",")));
@@ -452,7 +630,7 @@ document.getElementById("btnExportCsv").addEventListener("click", ()=>{
   a.click();
 });
 
-document.getElementById("btnImport").addEventListener("click", (ev)=>{
+$("#btnImport").addEventListener("click", (ev)=>{
   if (ev.altKey){
     const text = prompt("JSON 붙여넣기(배열 형태):");
     if (!text) return;
@@ -461,8 +639,9 @@ document.getElementById("btnImport").addEventListener("click", (ev)=>{
       if (!Array.isArray(arr)) throw new Error("배열이 아닙니다.");
       items = arr;
       save(items); render();
+      toast(`붙여넣기 완료: <b>${items.length}</b>문항`, "ok");
     } catch(e){
-      alert("가져오기 실패: " + e.message);
+      toast("가져오기 실패: " + e.message, "bad");
     }
     return;
   }
@@ -480,9 +659,9 @@ document.getElementById("btnImport").addEventListener("click", (ev)=>{
         items = data;
         save(items);
         render();
-        alert(`불러오기 완료: ${items.length}문항`);
+        toast(`불러오기 완료: <b>${items.length}</b>문항`, "ok");
       } catch(e){
-        alert("JSON 파싱 실패: " + e.message);
+        toast("JSON 파싱 실패: " + e.message, "bad");
       }
     };
     reader.readAsText(file, 'utf-8');
@@ -490,31 +669,59 @@ document.getElementById("btnImport").addEventListener("click", (ev)=>{
   input.click();
 });
 
-document.getElementById("btnImportUrl").addEventListener("click", async ()=>{
+$("#btnImportUrl").addEventListener("click", async ()=>{
   const prev = localStorage.getItem(LAST_URL_KEY) || "";
   const url = prompt("불러올 JSON 파일의 URL을 입력하세요", prev || "https://example.com/patent_ox_items.json");
   if (!url) return;
   await importFromUrl(url);
 });
 
-document.getElementById("btnReset").addEventListener("click", ()=>{
+$("#btnReset").addEventListener("click", ()=>{
   if (confirm("로컬 저장 데이터를 초기화할까요? (되돌릴 수 없음)")){
     localStorage.removeItem(STORAGE_KEY);
     items = initial;
     render();
+    toast("초기화 완료", "ok");
   }
 });
-document.getElementById("btnToggleEdit").addEventListener("click", ()=>{
+$("#btnToggleEdit").addEventListener("click", ()=>{
   settings.editMode = !settings.editMode;
   if (!settings.editMode){ settings.currentEditId = null; location.hash = ""; }
   saveSettings(settings);
   render();
+  toast("편집모드: " + (settings.editMode ? "ON" : "OFF"), "info");
 });
-document.getElementById("btnShuffle").addEventListener("click", shuffleItems);
-document.getElementById("btnQuiz").addEventListener("click", startQuiz);
-document.getElementById("btnQuizExit").addEventListener("click", exitQuiz);
-document.getElementById("btnHardRefresh").addEventListener("click", hardRefresh);
-document.getElementById("search").addEventListener("input", render);
+$("#btnShuffle").addEventListener("click", ()=>{ shuffleItems(); toast("셔플 완료", "info"); });
+$("#btnQuiz").addEventListener("click", startQuiz);
+$("#btnQuizExit").addEventListener("click", exitQuiz);
+$("#btnHardRefresh").addEventListener("click", hardRefresh);
+$("#search").addEventListener("input", render);
+
+// Mobile FABs
+$("#fabQuiz").addEventListener("click", startQuiz);
+$("#fabAdd").addEventListener("click", ()=>$("#btnAdd").click());
+$("#fabImportUrl").addEventListener("click", ()=>$("#btnImportUrl").click());
+
+// Drag & Drop
+window.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+window.addEventListener('drop', (e)=>{
+  e.preventDefault();
+  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && /json$/i.test(file.name)){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error("JSON 최상위는 배열이어야 합니다.");
+        items = data; save(items); render();
+        toast(`불러오기 완료: <b>${items.length}</b>문항`, "ok");
+      } catch(e){
+        toast("JSON 파싱 실패: " + e.message, "bad");
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+});
 
 // 초기 렌더
 render();
