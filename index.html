@@ -1,19 +1,546 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>Patent OX Pro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>특허법 OX — PWA URL 로더 포함</title>
 <link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="특허법 OX">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#ffffff">
 <style>
-/* 최소 스타일, 실제 스타일은 사용자 요구에 따라 추가 */
-body { font-family: sans-serif; }
+  :root { --gap: 12px; --radius: 12px; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica Neue', Arial, sans-serif;
+         margin: 0; background: #f6f7f9; color: #111; }
+  header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; gap: 8px; align-items: center; z-index: 10;
+           box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  header strong { white-space: nowrap; }
+  header input[type="text"]{ flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; }
+  header button { padding: 10px 12px; border: 1px solid #dbe1ea; background: #fff; border-radius: 10px; cursor: pointer; }
+  header button:hover { background: #f1f5f9; }
+  header button:active { transform: translateY(1px); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px; }
+  .quizbar { position: sticky; top: 58px; z-index: 9; background: linear-gradient(180deg,#ffffff 0%,#f9fbff 100%); border-bottom: 1px solid #e8eef7; padding: 10px 16px; display:none; }
+  .quizbar .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .pill { padding:4px 10px; border:1px solid #e2e8f0; border-radius:999px; background:#fff; font-size:12px; color:#334155; }
+  .progress { height:8px; background:#eef2f7; border-radius:999px; overflow:hidden; }
+  .progress > span { display:block; height:100%; width:0%; background:#7c9cff; transition:width .25s ease; }
+  .card { position: relative; background: #fff; border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 16px; margin-bottom: var(--gap); box-shadow: 0 1px 0 rgba(16,24,40,0.04);
+          transition: box-shadow .2s; }
+  .card:hover { box-shadow: 0 4px 20px rgba(16,24,40,.06); }
+  .card.review { outline: 2px dashed #f59e0b; }
+  .meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; color: #475569; }
+  .badge { padding: 2px 8px; border-radius: 999px; background:#f8fafc; border:1px solid #e6ebf2; }
+  .badge.trap { background:#eef4ff; border-color:#dbe7ff; }
+  .editpin { position: absolute; right: 12px; top: 12px; font-size: 12px; opacity: .9; }
+  .editpin button { padding: 6px 8px; border: 1px solid #e5e7eb; background: #fff; border-radius: 999px; cursor: pointer; }
+  .question { font-size: 16px; line-height: 1.6; margin-bottom: 12px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .actions button { padding: 8px 10px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; }
+  .actions button.active { background:#e8fff1; border-color:#a7f3d0; }
+  details { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; }
+  summary { cursor: pointer; user-select: none; }
+  .editor { margin-top: 12px; border-top: 1px dashed #e5e7eb; padding-top: 12px; display: none; }
+  .editor label { display: block; font-size: 12px; color: #475569; margin-top: 8px; }
+  .editor input[type="text"], .editor textarea { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
+  .muted { color: #64748b; font-size: 12px; }
+  .small { font-size: 12px; }
+  .footer { text-align: center; color: #64748b; font-size: 12px; padding: 24px 12px; }
+  .editmode-on { background: #eefbf1; border-color: #bbf7d0; }
+  .hl { margin-top: 8px; padding: 8px; background: #fff; border: 1px dashed #e5e7eb; border-radius: 8px; }
+  .hl .title { font-weight: 600; font-size: 12px; color: #334155; margin-bottom: 4px; }
+  .tok-ins { text-decoration: underline; text-decoration-style: solid; }
+  .tok-del { text-decoration: line-through; opacity: .6; }
+  .tok-chg { background: #fff3cd; }
+  .empty { background: #fff; border: 1px dashed #e5e7eb; padding: 14px; border-radius: 10px; color: #475569; }
 </style>
 </head>
 <body>
-<h1>Patent OX Pro 완성본</h1>
-<p>여기에 지금까지 논의한 모든 기능이 들어갑니다.</p>
-<script src="main.js"></script>
-<script src="import_json_patch.js"></script>
+<header>
+  <strong>특허법 OX — PWA URL 로더</strong>
+  <input id="search" type="text" placeholder="검색: 조문/문제/해설/트랩유형" />
+  <button id="btnToggleEdit">편집 모드: <span id="editState">OFF</span></button>
+  <button id="btnAdd">+ 새 문제</button>
+  <button id="btnExportJson">JSON 내보내기</button>
+  <button id="btnExportCsv">CSV 내보내기</button>
+  <button id="btnImport">JSON 가져오기(파일)</button>
+  <button id="btnImportUrl">URL에서 불러오기</button>
+  <button id="btnShuffle">셔플</button>
+  <button id="btnQuiz">랜덤 풀이</button>
+  <button id="btnQuizExit" style="display:none">퀴즈 종료</button>
+  <button id="btnReset">초기화</button>
+</header>
+
+<div id="quizBar" class="quizbar">
+  <div class="row">
+    <span class="pill">퀴즈 모드</span>
+    <span class="pill">진행: <b id="qbProgressText">0/0</b></span>
+    <span class="pill">정답: <b id="qbCorrectText">0</b></span>
+    <div class="progress" style="flex:1; min-width:160px;">
+      <span id="qbProgressFill"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="toolbar small">
+    • 카드 포커스 단축키: <b>O</b>=O, <b>X</b>=X, <b>E</b>=편집, <b>S</b>=저장, <b>M</b>=검토표시<br/>
+    • <b>편집 모드</b> ON → 카드 탭/클릭 시 해당 문항 편집기 즉시 오픈. 우상단 <b>✎ 편집</b>으로도 바로 진입.<br/>
+    • <b>하이라이트</b>는 “해설(원문)”과 “문제문”을 단어 단위로 비교해 변경 지점을 표시합니다.
+  </div>
+  <div id="list"></div>
+  <div id="empty" class="empty" style="display:none">아직 문항이 없습니다. JSON(파일/URL)로 가져오거나 “+ 새 문제”를 눌러 추가하세요.</div>
+  <div class="footer">로컬 저장(localStorage). JSON/CSV로 백업하세요.</div>
+</div>
+
+<script>
+const STORAGE_KEY = "patent_ox_items_v1";
+const SETTINGS_KEY = "patent_ox_settings_v1";
+const LAST_URL_KEY = "patent_ox_last_json_url";
+function uid() { return "P-" + Math.random().toString(36).slice(2, 8); }
+const initial = []; // blank
+
+function load() { const s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : initial; }
+function save(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+function loadSettings(){
+  const s = localStorage.getItem(SETTINGS_KEY);
+  return s ? JSON.parse(s) : { editMode:false, currentEditId:null };
+}
+function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+let items = load();
+let settings = loadSettings();
+
+// ===== URL Param Parser =====
+function getParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+
+async function importFromUrl(url, silent=false){
+  if (!url) return;
+  try{
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("JSON 최상위는 배열이어야 합니다.");
+    items = data;
+    save(items);
+    localStorage.setItem(LAST_URL_KEY, url);
+    render();
+    if (!silent) alert(`URL에서 불러오기 완료: ${items.length}문항`);
+  } catch(e){
+    if (!silent) alert("URL 로드 실패: " + e.message);
+  }
+}
+
+// ===== Hash(딥링크 편집) =====
+(function parseHash(){
+  const m = location.hash.match(/edit=([A-Za-z0-9\-]+)/);
+  if (m){ settings.editMode = true; settings.currentEditId = m[1]; saveSettings(settings); }
+})();
+
+// ===== Helpers =====
+function h(tag, attrs={}, ...children){
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === "html") el.innerHTML = v;
+    else el.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (typeof c === "string") el.appendChild(document.createTextNode(c));
+    else if (c) el.appendChild(c);
+  }
+  return el;
+}
+
+// Diff
+function diffTokens(a, b){
+  const wa = (a||"").split(/(\s+)/), wb = (b||"").split(/(\s+)/);
+  const n = wa.length, m = wb.length;
+  const dp = Array(n+1).fill(0).map(()=>Array(m+1).fill(0));
+  for (let i=1;i<=n;i++){ for (let j=1;j<=m;j++){ dp[i][j] = (wa[i-1]===wb[j-1]) ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]); } }
+  const ops = []; let i=n, j=m;
+  while (i>0 && j>0){
+    if (wa[i-1]===wb[j-1]){ ops.push({type:"eq", a:wa[i-1]}); i--; j--; }
+    else if (dp[i-1][j] >= dp[i][j-1]){ ops.push({type:"del", a:wa[i-1]}); i--; }
+    else { ops.push({type:"ins", b:wb[j-1]}); j--; }
+  }
+  while (i>0){ ops.push({type:"del", a:wa[i-1]}); i--; }
+  while (j>0){ ops.push({type:"ins", b:wb[j-1]}); j--; }
+  ops.reverse();
+  const merged = [];
+  for (let k=0;k<ops.length;k++){
+    const cur = ops[k]; const prev = merged[merged.length-1];
+    if (prev && prev.type==="del" && cur.type==="ins"){ merged[merged.length-1] = { type:"chg", a: prev.a, b: cur.b }; }
+    else merged.push(cur);
+  }
+  return merged;
+}
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function renderDiff(aRaw, qRaw){
+  const a = (aRaw||"").trim(), q = (qRaw||"").trim();
+  if (!a || !q) return "<em class='muted'>원문이나 문제문이 비어 있어 하이라이트를 표시할 수 없습니다.</em>";
+  const ops = diffTokens(a, q);
+  const left = [], right = [];
+  for (const op of ops){
+    if (op.type==="eq"){ left.push(escapeHtml(op.a)); right.push(escapeHtml(op.a)); }
+    else if (op.type==="del"){ left.push("<span class='tok-del'>"+escapeHtml(op.a)+"</span>"); }
+    else if (op.type==="ins"){ right.push("<span class='tok-ins'>"+escapeHtml(op.b)+"</span>"); }
+    else if (op.type==="chg"){
+      left.push("<span class='tok-del tok-chg'>"+escapeHtml(op.a)+"</span>");
+      right.push("<span class='tok-ins tok-chg'>"+escapeHtml(op.b)+"</span>");
+    }
+  }
+  return "<div class='hl'><div class='title'>원문 대비 문제문 차이</div><div><div class='small muted'>왼쪽=원문, 오른쪽=문제문</div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px'><div>"+left.join("")+"</div><div>"+right.join("")+"</div></div></div>";
+}
+
+// ===== QUIZ & Shuffle =====
+let quiz = { active:false, pool:[], picked:0, answered:0, correct:0 };
+function resetQuizState(){
+  quiz.answered = 0; quiz.correct = 0;
+  (quiz.pool||[]).forEach(q => { q._sel = null; q._done = false; });
+}
+function sampleN(arr, n){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, Math.max(0, Math.min(n, a.length)));
+}
+function shuffleItems() {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  save(items); render();
+}
+function startQuiz(){
+  if (!items.length){ alert("문항이 없습니다. 먼저 문제를 추가/가져오거나 URL에서 불러오세요."); return; }
+  const n = parseInt(prompt(`몇 개를 랜덤으로 풀까요? (1 ~ ${items.length})`, Math.min(20, items.length)), 10);
+  if (!n || isNaN(n)) return;
+  quiz.pool = sampleN(items, n);
+  quiz.picked = n;
+  quiz.active = true;
+  resetQuizState();
+  document.getElementById("btnQuiz").style.display = "none";
+  document.getElementById("btnQuizExit").style.display = "inline-block";
+  document.getElementById("quizBar").style.display = "block";
+  render();
+  updateQuizBar();
+}
+function exitQuiz(){
+  quiz = { active:false, pool:[], picked:0, answered:0, correct:0 };
+  document.getElementById("btnQuiz").style.display = "inline-block";
+  document.getElementById("btnQuizExit").style.display = "none";
+  document.getElementById("quizBar").style.display = "none";
+  render();
+}
+function updateQuizBar(){
+  const t = quiz.picked || (quiz.pool ? quiz.pool.length : 0);
+  const a = quiz.answered || 0;
+  const c = quiz.correct || 0;
+  const pct = t ? Math.round((a/t)*100) : 0;
+  const elP = document.getElementById("qbProgressText");
+  const elC = document.getElementById("qbCorrectText");
+  const elF = document.getElementById("qbProgressFill");
+  if (elP) elP.textContent = `${a}/${t}`;
+  if (elC) elC.textContent = `${c}`;
+  if (elF) elF.style.width = pct + "%";
+}
+
+// ===== Render =====
+function render(){
+  document.getElementById("editState").textContent = settings.editMode ? "ON" : "OFF";
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const root = document.getElementById("list");
+  const empty = document.getElementById("empty");
+  root.innerHTML = "";
+
+  const source = quiz.active ? quiz.pool : items;
+  let count = 0;
+
+  source.forEach((it)=>{
+    if (q && !((it.articleLabel||'') + ' ' + (it.questionText||'') + ' ' + (it.explanation||'') + ' ' + (it.trapTypes||'') + ' ' + (it.compareNote||'')).toLowerCase().includes(q)) return;
+    count++;
+    const card = h("div", {class:"card", tabindex:"0", id: it.id});
+    if (it.markReview) card.classList.add("review");
+    if (settings.editMode) card.classList.add("editmode-on");
+    if (settings.editMode){
+      card.addEventListener("click", (ev)=>{
+        if ((ev.target.tagName === "BUTTON" || ev.target.closest(".editor") || ev.target.closest("details"))) return;
+        openEditorFor(it.id);
+      });
+    }
+    const meta = h("div",{class:"meta"},
+      h("span",{class:"badge"}, it.articleLabel || "—"),
+      h("span",{class:"badge trap"}, it.trapTypes || "트랩미지정"),
+      h("span",{class:"muted"}, `ID: ${it.id}`),
+    );
+    const pin = h("div",{class:"editpin"},
+      h("button",{onclick:(e)=>{ e.stopPropagation(); quickEdit(it.id); }}, "✎ 편집")
+    );
+    const question = h("div",{class:"question"}, it.questionText || "");
+    const actions = h("div",{class:"actions"});
+    const btnO = h("button", {onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"O"); }}, "O");
+    const btnX = h("button", {onclick:(e)=>{ e.stopPropagation(); selectAnswer(it,"X"); }}, "X");
+    if (it.answerUser==="O") btnO.classList.add("active"); else if (it.answerUser==="X") btnX.classList.add("active");
+    const btnEdit = h("button", {onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,true); settings.currentEditId = it.id; saveSettings(settings); }}, "수정");
+    const btnMark = h("button", {onclick:(e)=>{ e.stopPropagation(); it.markReview=!it.markReview; save(items); render(); }}, it.markReview?"검토 해제":"검토 표시");
+    const btnHL = h("button", {onclick:(e)=>{ e.stopPropagation(); showHighlight(card, it); }}, "하이라이트");
+    const btnDelete = h("button", {onclick:(e)=>{ e.stopPropagation(); if(confirm('이 문제를 삭제할까요?')){ const idxAll = items.findIndex(x=>x.id===it.id); if (idxAll>=0) items.splice(idxAll,1); save(items); render(); } }}, "삭제");
+    actions.append(btnO, btnX, btnEdit, btnMark, btnHL, btnDelete);
+
+    const det = h("details",{},
+      h("summary",{}, "해설/비교 보기"),
+      h("div", {class:"small", style:"margin-top:8px"}, 
+        h("div",{}, "해설(원문/전문 또는 요지):"),
+        h("div",{}, it.explanation || ""),
+        h("div",{style:"margin-top:8px"}, "비교조문/메모: " + (it.compareNote || "—"))
+      )
+    );
+    const hlBox = h("div", {id: "hl-"+it.id, style:"margin-top:8px"});
+
+    const editor = h("div",{class:"editor"});
+    editor.append(
+      labelInput("조문 표기", it, "articleLabel"),
+      labelTextarea("문제 문장", it, "questionText"),
+      labelInput("정답 (O/X)", it, "answer"),
+      labelTextarea("해설(원문/전문)", it, "explanation"),
+      labelInput("비교조문/메모", it, "compareNote"),
+      labelInput("트랩 유형(쉼표 구분)", it, "trapTypes"),
+      h("div",{class:"actions"},
+        h("button",{onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); save(items); render(); }}, "저장"),
+        h("button",{onclick:(e)=>{ e.stopPropagation(); toggleEditor(card,false); render(); }}, "취소")
+      )
+    );
+
+    card.append(meta, pin, question, actions, det, hlBox, editor);
+    root.appendChild(card);
+
+    card.addEventListener("keydown",(ev)=>{
+      if (ev.key==="o" || ev.key==="O") { selectAnswer(it,"O"); ev.preventDefault(); }
+      if (ev.key==="x" || ev.key==="X") { selectAnswer(it,"X"); ev.preventDefault(); }
+      if (ev.key==="e" || ev.key==="E") { openEditorFor(it.id); ev.preventDefault(); }
+      if (ev.key==="s" || ev.key==="S") {
+        const ed = card.querySelector(".editor");
+        if (ed.style.display==="block"){ toggleEditor(card,false); save(items); render(); ev.preventDefault(); }
+      }
+      if (ev.key==="m" || ev.key==="M") { it.markReview=!it.markReview; save(items); render(); ev.preventDefault(); }
+    });
+  });
+
+  empty.style.display = count ? "none" : "block";
+}
+
+function showHighlight(card, it){
+  const box = card.querySelector("#hl-"+it.id);
+  const html = renderDiff(String(it.explanation||""), String(it.questionText||""));
+  box.innerHTML = html;
+  box.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+function labelInput(title, it, key){
+  const wrap = h("div",{});
+  wrap.append(h("label",{}, title));
+  const inp = h("input",{type:"text", value: it[key] || ""});
+  inp.addEventListener("input", ()=>{ it[key] = inp.value; save(items); });
+  wrap.append(inp);
+  return wrap;
+}
+function labelTextarea(title, it, key){
+  const wrap = h("div",{});
+  wrap.append(h("label",{}, title));
+  const ta = h("textarea",{rows:"5"}, it[key] || "");
+  ta.addEventListener("input", ()=>{ it[key] = ta.value; save(items); });
+  wrap.append(ta);
+  return wrap;
+}
+
+// 선택(정답 시 채점/진행 갱신)
+function selectAnswer(it, val){
+  it.answerUser = val;
+  if (quiz.active && quiz.pool.includes(it)){
+    const wasDone = !!it._done;
+    if (!wasDone){
+      quiz.answered += 1;
+      it._done = true;
+      if (val === it.answer) quiz.correct += 1;
+      updateQuizBar();
+    }
+  }
+  save(items);
+  render();
+}
+
+function toggleEditor(card, on, focusFirst=false){
+  const ed = card.querySelector(".editor");
+  if (on){
+    document.querySelectorAll(".editor").forEach(el=> el.style.display = "none");
+  }
+  ed.style.display = on ? "block" : "none";
+  if (on && focusFirst){
+    const first = ed.querySelector("input,textarea");
+    if (first) first.focus({preventScroll:true});
+    card.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+}
+function quickEdit(id){
+  settings.editMode = true;
+  settings.currentEditId = id;
+  saveSettings(settings);
+  location.hash = "edit=" + id;
+  render();
+}
+function openEditorFor(id){
+  settings.currentEditId = id;
+  saveSettings(settings);
+  location.hash = "edit=" + id;
+  const target = document.getElementById(id);
+  if (target) toggleEditor(target, true, true);
+}
+
+// ===== Buttons =====
+document.getElementById("btnAdd").addEventListener("click", ()=>{
+  const it = { id: uid(), articleLabel:"", questionText:"(O/X)", answer:"", explanation:"", compareNote:"", trapTypes:"", markReview:false };
+  items.unshift(it);
+  save(items); render();
+  settings.editMode = true; settings.currentEditId = it.id; saveSettings(settings);
+  location.hash = "edit=" + it.id;
+});
+document.getElementById("btnExportJson").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(items, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "patent_ox_items.json";
+  a.click();
+});
+document.getElementById("btnExportCsv").addEventListener("click", ()=>{
+  const cols = ["id","articleLabel","questionText","answer","explanation","compareNote","trapTypes","markReview"];
+  const esc = s => ('"' + String(s).replace(/"/g,'""') + '"');
+  const rows = [cols.join(",")].concat(items.map(it=>cols.map(c=>esc(it[c] ?? "")).join(",")));
+  const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "patent_ox_items.csv";
+  a.click();
+});
+
+// 파일 임포트(웹 사파리에선 OK, PWA에선 안 될 수 있음)
+document.getElementById("btnImport").addEventListener("click", (ev)=>{
+  if (ev.altKey){
+    const text = prompt("JSON 붙여넣기(배열 형태):");
+    if (!text) return;
+    try{
+      const arr = JSON.parse(text);
+      if (!Array.isArray(arr)) throw new Error("배열이 아닙니다.");
+      items = arr;
+      save(items); render();
+    } catch(e){
+      alert("가져오기 실패: " + e.message);
+    }
+    return;
+  }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error("JSON 최상위는 배열이어야 합니다.");
+        items = data;
+        save(items);
+        render();
+        alert(`불러오기 완료: ${items.length}문항`);
+      } catch(e){
+        alert("JSON 파싱 실패: " + e.message);
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  };
+  input.click();
+});
+
+// URL 임포트: PWA에서도 작동
+document.getElementById("btnImportUrl").addEventListener("click", async ()=>{
+  const prev = localStorage.getItem(LAST_URL_KEY) || "";
+  const url = prompt("불러올 JSON 파일의 URL을 입력하세요", prev || "https://example.com/patent_ox_items.json");
+  if (!url) return;
+  await importFromUrl(url);
+});
+
+window.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+window.addEventListener('drop', (e)=>{
+  e.preventDefault();
+  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && /json$/i.test(file.name)){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error("JSON 최상위는 배열이어야 합니다.");
+        items = data; save(items); render();
+        alert(`불러오기 완료: ${items.length}문항`);
+      } catch(e){
+        alert("JSON 파싱 실패: " + e.message);
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if (confirm("로컬 저장 데이터를 초기화할까요? (되돌릴 수 없음)")){
+    localStorage.removeItem(STORAGE_KEY);
+    items = initial;
+    render();
+  }
+});
+document.getElementById("btnToggleEdit").addEventListener("click", ()=>{
+  settings.editMode = !settings.editMode;
+  if (!settings.editMode){ settings.currentEditId = null; location.hash = ""; }
+  saveSettings(settings);
+  render();
+});
+document.getElementById("btnShuffle").addEventListener("click", shuffleItems);
+document.getElementById("btnQuiz").addEventListener("click", startQuiz);
+document.getElementById("btnQuizExit").addEventListener("click", exitQuiz);
+document.getElementById("search").addEventListener("input", render);
+
+// 초기 렌더
+render();
+
+// ===== 부트: ?load=... 있으면 자동 로드, 없으면 마지막 URL 자동 로드 시도 =====
+(async function bootAutoLoad(){
+  const urlParam = getParam("load");
+  if (urlParam){
+    await importFromUrl(urlParam, true);
+  } else {
+    const last = localStorage.getItem(LAST_URL_KEY);
+    if (last && (!items || !items.length)){
+      await importFromUrl(last, true);
+    }
+  }
+  render();
+})();
+
+// ===== PWA SW 등록 =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker_blank.js').catch(console.error);
+  });
+}
+</script>
 </body>
 </html>
